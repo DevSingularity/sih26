@@ -1,6 +1,6 @@
 import type { Alert, StateUpdate } from "./types.js";
 import { alerts, assets, stations } from "./state.js";
-import { evaluateStatus } from "./risk.js";
+import { evaluateStatus } from "./risk-eval.js";
 
 const TICK_MS = 3000;
 const FUEL_ROTATION = ["maitri-fuel-1", "bharati-fuel-1"];

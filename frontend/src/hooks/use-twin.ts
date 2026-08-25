@@ -8,9 +8,9 @@ import {
   type StationId,
   type TwinFrame,
 } from "@/lib/types";
+import { postJson } from "@/lib/api";
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:4000/ws/twin";
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 export interface QueuedAction {
   id: string;
@@ -37,15 +37,6 @@ function makeLocalAlert(severity: Alert["severity"], message: string): Alert {
     message,
     timestamp: new Date().toISOString(),
   };
-}
-
-async function postJson(path: string, payload: unknown): Promise<void> {
-  const res = await fetch(`${API_URL}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(`${path} failed with ${res.status}`);
 }
 
 export function useTwin() {
