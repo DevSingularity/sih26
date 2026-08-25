@@ -10,7 +10,7 @@ import {
 } from "@/lib/types";
 import { postJson } from "@/lib/api";
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:4000/ws/twin";
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? "";
 
 export interface QueuedAction {
   id: string;
@@ -57,6 +57,11 @@ export function useTwin() {
     let disposed = false;
 
     const connect = () => {
+      if (!WS_URL) {
+        // No WebSocket server available (e.g. Vercel). Use simulated connected state.
+        setConnected(true);
+        return;
+      }
       socket = new WebSocket(WS_URL);
       socket.onopen = () => setConnected(true);
       socket.onmessage = (event: MessageEvent<string>) => {
@@ -72,7 +77,7 @@ export function useTwin() {
       };
       socket.onclose = () => {
         setConnected(false);
-        if (!disposed) retryTimer = setTimeout(connect, 3000);
+        if (!disposed && WS_URL) retryTimer = setTimeout(connect, 3000);
       };
     };
 

@@ -5,7 +5,6 @@ import { useRiskAlerts } from "@/hooks/use-risk-alerts";
 import { useCargo } from "@/hooks/use-cargo";
 import { useRecommendations } from "@/hooks/use-recommendations";
 import { useSyncStatus } from "@/hooks/use-sync-status";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -27,81 +26,69 @@ export default function StationDashboard() {
   const pendingRecs = recommendations.filter((r) => r.status === "PENDING");
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-8 space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-xl font-bold tracking-[0.2em] text-ice uppercase">
+        <h1 className="font-display text-2xl font-bold tracking-[0.15em] text-ice uppercase">
           {station.toUpperCase()} Operations Dashboard
         </h1>
-        <span className="font-mono text-[9px] tracking-[0.2em] text-muted-ink">
+        <span className="font-mono text-[11px] tracking-[0.12em] text-muted-ink">
           {new Date().toISOString().slice(0, 16).replace("T", " ")} UTC
         </span>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
-        <Card className="border-white/8 bg-panel/60">
-          <CardHeader><CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">ACTIVE RISKS</CardTitle></CardHeader>
-          <CardContent>
-            <span className="font-display text-3xl font-bold text-critical">{stationAlerts.length}</span>
-          </CardContent>
-        </Card>
-        <Card className="border-white/8 bg-panel/60">
-          <CardHeader><CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">CARGO ITEMS</CardTitle></CardHeader>
-          <CardContent>
-            <span className="font-display text-3xl font-bold text-accent-amber">{stationCargo.length}</span>
-          </CardContent>
-        </Card>
-        <Card className="border-white/8 bg-panel/60">
-          <CardHeader><CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">PENDING RECS</CardTitle></CardHeader>
-          <CardContent>
-            <span className="font-display text-3xl font-bold text-accent-purple">{pendingRecs.length}</span>
-          </CardContent>
-        </Card>
-        <Card className="border-white/8 bg-panel/60">
-          <CardHeader><CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">SYNC STATUS</CardTitle></CardHeader>
-          <CardContent>
-            <span className={cn("font-display text-3xl font-bold", pendingCount > 0 ? "text-warn" : "text-ok")}>{pendingCount}</span>
-            <span className="ml-2 font-mono text-[9px] text-muted-ink">pending</span>
-            {failedCount > 0 && <span className="ml-2 font-mono text-[9px] text-critical">{failedCount} failed</span>}
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: "ACTIVE RISKS", value: stationAlerts.length, accent: "text-critical" },
+          { label: "CARGO ITEMS", value: stationCargo.length, accent: "text-accent-amber" },
+          { label: "PENDING RECS", value: pendingRecs.length, accent: "text-accent-purple" },
+          { label: "SYNC PENDING", value: pendingCount, accent: pendingCount > 0 ? "text-warn" : "text-ok" },
+        ].map((stat) => (
+          <div key={stat.label} className="card-panel p-5">
+            <span className="label-mono mb-2 block">{stat.label}</span>
+            <span className={cn("font-display text-4xl font-bold", stat.accent)}>{stat.value}</span>
+            {stat.label === "SYNC PENDING" && failedCount > 0 && (
+              <span className="ml-2 font-mono text-[11px] text-critical">{failedCount} failed</span>
+            )}
+          </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="border-white/8 bg-panel/60">
-          <CardHeader><CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">RISK ALERTS</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="card-panel-static p-5">
+          <h2 className="label-mono mb-4">RISK ALERTS</h2>
+          <div className="space-y-3">
             {stationAlerts.length === 0 ? (
-              <p className="font-mono text-[9px] text-muted-ink">NO ACTIVE RISKS</p>
+              <p className="value-mono text-muted-ink py-4 text-center">No active risks</p>
             ) : (
               stationAlerts.map((r) => (
-                <div key={r.id} className="flex items-center justify-between rounded-md border border-white/8 bg-white/3 px-3 py-2">
-                  <div className="flex-1">
-                    <Badge variant="outline" className={cn("h-4 rounded-sm px-1.5 font-mono text-[8px] tracking-[0.14em]", STATUS_CLS[r.severity])}>
+                <div key={r.id} className="flex items-center justify-between rounded-xl border border-white/8 bg-white/4 px-4 py-3 table-row-hover">
+                  <div className="flex-1 min-w-0">
+                    <Badge variant="outline" className={cn("h-5 rounded-md px-2 font-mono text-[10px] tracking-[0.12em] mb-1", STATUS_CLS[r.severity])}>
                       {r.type}
                     </Badge>
-                    <p className="mt-1 text-xs text-ice">{r.message}</p>
+                    <p className="text-[13px] text-ice leading-snug truncate">{r.message}</p>
                   </div>
-                  <time className="shrink-0 ml-4 font-mono text-[8px] tabular-nums text-muted-ink">{r.raisedAt.slice(5, 10)}</time>
+                  <time className="shrink-0 ml-4 font-mono text-[10px] tabular-nums text-muted-ink">{r.raisedAt.slice(5, 10)}</time>
                 </div>
               ))
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="border-white/8 bg-panel/60">
-          <CardHeader><CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">PENDING RECOMMENDATIONS</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
+        <div className="card-panel-static p-5">
+          <h2 className="label-mono mb-4">PENDING RECOMMENDATIONS</h2>
+          <div className="space-y-3">
             {pendingRecs.length === 0 ? (
-              <p className="font-mono text-[9px] text-muted-ink">NO PENDING RECOMMENDATIONS</p>
+              <p className="value-mono text-muted-ink py-4 text-center">No pending recommendations</p>
             ) : (
               pendingRecs.map((r) => (
-                <div key={r.id} className="rounded-md border border-white/8 bg-white/3 px-3 py-2">
-                  <p className="text-xs text-ice">{r.suggestedAction}</p>
+                <div key={r.id} className="rounded-xl border border-white/8 bg-white/4 px-4 py-3 table-row-hover">
+                  <p className="text-[13px] text-ice leading-snug">{r.suggestedAction}</p>
                 </div>
               ))
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

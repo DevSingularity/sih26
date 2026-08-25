@@ -1,64 +1,73 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { MapPin, Activity, Package, Radio, AlertTriangle } from "lucide-react";
+
+const ACTIONS = [
+  { label: "LOG FIELD UPDATE", href: "/field/updates", desc: "Report activity, conditions, notes", icon: Activity },
+  { label: "CARGO HANDLING", href: "/field/cargo", desc: "Scan, unload, verify cargo", icon: Package },
+  { label: "RESOURCE USAGE", href: "/field/resources", desc: "Log fuel, power, equipment", icon: Radio },
+  { label: "SHARE LOCATION", href: "/field/location", desc: "Update current position", icon: MapPin },
+  { label: "SOS", href: "/field/sos", desc: "Emergency alert", icon: AlertTriangle, critical: true },
+];
 
 export default function FieldHome() {
   return (
-    <div className="p-4 space-y-4">
-      <div className="rounded-xl border border-white/8 bg-panel/60 p-4 text-center">
-        <h1 className="font-display text-lg font-bold tracking-[0.2em] text-ice uppercase">
-          Field Operations
-        </h1>
-        <p className="mt-1 font-mono text-[9px] tracking-[0.14em] text-muted-ink">
-          CHECK IN • HANDLE CARGO • LOG RESOURCES • SHARE LOCATION
-        </p>
+    <div className="p-5 space-y-5">
+      <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-panel/80 to-panel/40 p-6 text-center backdrop-blur-md relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-ok/5 rounded-full blur-[60px]" />
+          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-accent-blue/5 rounded-full blur-[50px]" />
+        </div>
+        <div className="relative z-10">
+          <h1 className="font-display text-xl font-bold tracking-[0.2em] text-ice uppercase mb-1">
+            Field Operations
+          </h1>
+          <p className="font-mono text-[11px] tracking-[0.12em] text-muted-ink">
+            CHECK IN · HANDLE CARGO · LOG RESOURCES · SHARE LOCATION
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <Card className="border-white/8 bg-panel/60">
-          <CardHeader><CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">LAST SYNC</CardTitle></CardHeader>
-          <CardContent>
-            <p className="font-mono text-xs text-ice">{new Date().toISOString().slice(11, 19)} UTC</p>
-          </CardContent>
-        </Card>
-        <Card className="border-white/8 bg-panel/60">
-          <CardHeader><CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">STATION</CardTitle></CardHeader>
-          <CardContent>
-            <Badge variant="outline" className="border-ok/40 bg-ok/10 text-ok font-mono text-[9px]">
-              MAITRI
-            </Badge>
-          </CardContent>
-        </Card>
+        <div className="card-panel p-4">
+          <span className="label-mono-sm block mb-1">LAST SYNC</span>
+          <p className="value-mono text-[12px]">{new Date().toISOString().slice(11, 19)} UTC</p>
+        </div>
+        <div className="card-panel p-4">
+          <span className="label-mono-sm block mb-1">STATION</span>
+          <Badge variant="outline" className="border-ok/40 bg-ok/10 text-ok font-mono text-[11px] h-5 px-2">
+            MAITRI
+          </Badge>
+        </div>
       </div>
 
-      <div className="space-y-2">
-        <h2 className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">QUICK ACTIONS</h2>
-        {[
-          { label: "LOG FIELD UPDATE", href: "/field/updates", desc: "Report activity, conditions, notes" },
-          { label: "CARGO HANDLING", href: "/field/cargo", desc: "Scan, unload, verify cargo" },
-          { label: "RESOURCE USAGE", href: "/field/resources", desc: "Log fuel, power, equipment" },
-          { label: "SHARE LOCATION", href: "/field/location", desc: "Update current position" },
-          { label: "SOS", href: "/field/sos", desc: "Emergency alert", critical: true },
-        ].map((action) => (
-          <a
-            key={action.href}
-            href={action.href}
-            className={`flex items-center justify-between rounded-lg border px-4 py-3 transition-colors ${
-              action.critical
-                ? "border-critical/30 bg-critical/5 hover:bg-critical/10"
-                : "border-white/8 bg-white/3 hover:bg-white/5"
-            }`}
-          >
-            <div>
-              <span className={`font-mono text-[10px] tracking-[0.2em] uppercase ${action.critical ? "text-critical" : "text-ice"}`}>
-                {action.label}
-              </span>
-              <p className="font-mono text-[8px] text-muted-ink mt-0.5">{action.desc}</p>
-            </div>
-            <span className={`font-mono text-[9px] ${action.critical ? "text-critical" : "text-muted-ink"}`}>→</span>
-          </a>
-        ))}
+      <div className="space-y-2.5">
+        <h2 className="label-mono">QUICK ACTIONS</h2>
+        {ACTIONS.map((action) => {
+          const Icon = action.icon;
+          return (
+            <Link
+              key={action.href}
+              href={action.href}
+              className={`flex items-center gap-4 rounded-xl border px-5 py-4 transition-all duration-200 ${
+                action.critical
+                  ? "border-critical/25 bg-critical/5 hover:bg-critical/10 hover:border-critical/40 hover:shadow-[0_0_20px_rgba(212,93,93,0.1)]"
+                  : "border-white/8 bg-white/3 hover:bg-white/6 hover:border-white/15 hover:shadow-[0_2px_12px_rgba(0,0,0,0.2)]"
+              }`}
+            >
+              <Icon className={`size-5 shrink-0 ${action.critical ? "text-critical" : "text-muted-ink"}`} />
+              <div className="flex-1 min-w-0">
+                <span className={`font-mono text-[12px] tracking-[0.15em] uppercase font-medium ${action.critical ? "text-critical" : "text-ice"}`}>
+                  {action.label}
+                </span>
+                <p className="font-mono text-[10px] text-muted-ink mt-0.5">{action.desc}</p>
+              </div>
+              <span className={`font-mono text-[11px] shrink-0 ${action.critical ? "text-critical" : "text-muted-ink"}`}>→</span>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

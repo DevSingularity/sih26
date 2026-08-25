@@ -1,14 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { TopBar } from "@/components/console/top-bar";
 import { BottomTabBar } from "@/components/console/bottom-tab-bar";
-import { useTwin } from "@/hooks/use-twin";
 import { useEffect, useState } from "react";
 
 export default function FieldLayout({ children }: { children: React.ReactNode }) {
-  const twin = useTwin();
   const [pendingCount, setPendingCount] = useState(0);
+  const [isOnline, setIsOnline] = useState(true);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    setIsOnline(navigator.onLine);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     const checkPending = () => {
@@ -27,21 +37,22 @@ export default function FieldLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="relative mx-auto flex h-screen max-w-md flex-col overflow-hidden bg-deep">
-      <div className="flex items-center justify-between border-b border-white/8 bg-panel/95 px-4 py-3">
-        <Link href="/" className="font-mono text-[9px] tracking-[0.2em] text-muted-ink hover:text-ice transition-colors">
-          ← SWITCH CONSOLE
+      <div className="flex items-center justify-between border-b border-white/10 bg-panel/95 px-5 py-3.5 backdrop-blur-xl">
+        <Link href="/" className="font-mono text-[11px] tracking-[0.15em] text-muted-ink hover:text-ice transition-colors duration-200 font-medium">
+          ← SWITCH
         </Link>
-        <span className="font-display text-xs font-semibold tracking-[0.3em] text-ice">
+        <span className="font-display text-xs font-bold tracking-[0.3em] text-ice uppercase">
           FIELD APP
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           {pendingCount > 0 && (
-            <span className="rounded-full border border-warn/40 bg-warn/10 px-2 py-0.5 font-mono text-[8px] tracking-[0.14em] text-warn">
+            <span className="rounded-full border border-warn/40 bg-warn/10 px-2.5 py-1 font-mono text-[10px] tracking-[0.12em] text-warn font-medium">
               {pendingCount} PENDING
             </span>
           )}
-          <span className={`font-mono text-[8px] tracking-[0.14em] ${twin.connected ? "text-ok" : "text-critical"}`}>
-            {twin.connected ? "ONLINE" : "OFFLINE"}
+          <span className={`flex items-center gap-1.5 font-mono text-[10px] tracking-[0.12em] font-medium ${isOnline ? "text-ok" : "text-critical"}`}>
+            <span className={`size-1.5 rounded-full ${isOnline ? "bg-ok" : "bg-critical"}`} />
+            {isOnline ? "ONLINE" : "OFFLINE"}
           </span>
         </div>
       </div>

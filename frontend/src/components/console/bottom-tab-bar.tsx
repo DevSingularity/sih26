@@ -25,7 +25,7 @@ export function BottomTabBar() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-[1000] flex items-stretch border-t border-white/8 bg-panel/95 backdrop-blur">
+    <nav className="fixed bottom-0 inset-x-0 z-[1000] flex items-stretch border-t border-white/10 bg-panel/98 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
       {TABS.map((tab) => {
         const Icon = tab.icon;
         const isActive =
@@ -38,18 +38,24 @@ export function BottomTabBar() {
             key={tab.href}
             href={tab.href}
             className={cn(
-              "flex flex-1 flex-col items-center justify-center gap-1 py-3 transition-colors",
+              "flex flex-1 flex-col items-center justify-center gap-1.5 py-3 transition-all duration-200 relative",
               isSos
                 ? isActive
-                  ? "bg-critical/20 text-critical"
-                  : "text-critical/60 hover:bg-critical/10 hover:text-critical"
+                  ? "bg-critical/15 text-critical"
+                  : "text-critical/60 hover:bg-critical/8 hover:text-critical"
                 : isActive
-                  ? "text-ok bg-ok/10"
+                  ? "text-ok"
                   : "text-muted-ink hover:text-ice",
             )}
           >
-            <Icon className="size-5" />
-            <span className="font-mono text-[8px] tracking-[0.2em] uppercase">
+            {isActive && !isSos && (
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-ok" />
+            )}
+            {isActive && isSos && (
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-critical" />
+            )}
+            <Icon className="size-5" strokeWidth={isActive ? 2.5 : 1.5} />
+            <span className="font-mono text-[10px] tracking-[0.12em] font-medium">
               {tab.label}
             </span>
           </Link>

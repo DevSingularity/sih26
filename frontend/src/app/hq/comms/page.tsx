@@ -1,64 +1,59 @@
 "use client";
 
 import { useComms } from "@/hooks/use-comms";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 export default function HqCommsPage() {
-  const { entries, loading } = useComms();
+  const { entries } = useComms();
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="font-display text-xl font-bold tracking-[0.2em] text-ice uppercase">
+    <div className="p-8 space-y-6">
+      <h1 className="font-display text-2xl font-bold tracking-[0.15em] text-ice uppercase">
         Communication Log
       </h1>
 
-      <Card className="border-white/8 bg-panel/60">
-        <CardHeader>
-          <CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">
-            HQ ↔ ANTARCTIC STATION THREAD
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {entries.map((entry) => {
-            const isHq = entry.direction === "HQ_TO_ADMIN";
-            return (
-              <div
-                key={entry.id}
-                className={cn(
-                  "rounded-md border px-4 py-3",
-                  isHq
-                    ? "border-accent-blue/20 bg-accent-blue/5 ml-8"
-                    : "border-ok/20 bg-ok/5 mr-8",
-                )}
-              >
-                <div className="flex items-center justify-between">
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "h-4 rounded-sm px-1.5 font-mono text-[8px] tracking-[0.14em]",
-                      isHq
-                        ? "border-accent-blue/40 bg-accent-blue/10 text-accent-blue"
-                        : "border-ok/40 bg-ok/10 text-ok",
-                    )}
-                  >
-                    {isHQ(entry) ? "HQ → STATION" : "STATION → HQ"}
-                  </Badge>
-                  <time className="font-mono text-[8px] tabular-nums text-muted-ink">
-                    {entry.timestamp.slice(0, 16).replace("T", " ")} UTC
-                  </time>
+      <div className="card-panel-static p-5">
+        <h2 className="label-mono mb-4">HQ ↔ ANTARCTIC STATION THREAD</h2>
+        <ScrollArea className="thin-scroll max-h-[calc(100vh-220px)]">
+          <div className="space-y-4 pr-2">
+            {entries.map((entry, i) => {
+              const isHq = entry.direction === "HQ_TO_ADMIN";
+              return (
+                <div
+                  key={entry.id}
+                  className={cn(
+                    "rounded-xl border px-5 py-4 animate-fade-in transition-all duration-200 hover:border-white/15",
+                    isHq
+                      ? "border-accent-blue/15 bg-accent-blue/4 ml-8"
+                      : "border-ok/15 bg-ok/4 mr-8",
+                  )}
+                  style={{ animationDelay: `${i * 40}ms` }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "h-5 rounded-md px-2.5 font-mono text-[10px] tracking-[0.12em] font-medium",
+                        isHq
+                          ? "border-accent-blue/40 bg-accent-blue/10 text-accent-blue"
+                          : "border-ok/40 bg-ok/10 text-ok",
+                      )}
+                    >
+                      {isHq ? "HQ → STATION" : "STATION → HQ"}
+                    </Badge>
+                    <time className="font-mono text-[10px] tabular-nums text-muted-ink">
+                      {entry.timestamp.slice(0, 16).replace("T", " ")} UTC
+                    </time>
+                  </div>
+                  <p className="text-[13px] leading-relaxed text-ice">{entry.message}</p>
                 </div>
-                <p className="mt-2 text-sm leading-relaxed text-ice">{entry.message}</p>
-              </div>
-            );
-          })}
-        </CardContent>
-      </Card>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      </div>
     </div>
   );
-}
-
-function isHQ(entry: { direction: string }): boolean {
-  return entry.direction === "HQ_TO_ADMIN";
 }

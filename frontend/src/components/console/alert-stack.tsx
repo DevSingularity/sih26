@@ -19,12 +19,12 @@ const SEVERITY_BORDER: Record<AssetStatus, string> = {
 
 export function AlertStack({ alerts }: { alerts: Alert[] }) {
   return (
-    <aside className="pointer-events-none fixed bottom-4 right-4 z-[1000] flex w-[350px] flex-col gap-2">
-      <p className="pl-1 font-mono text-[9px] tracking-[0.24em] text-muted-ink">
+    <aside className="pointer-events-none fixed bottom-4 right-4 z-[1000] flex w-[380px] flex-col gap-2.5">
+      <p className="pl-1 font-mono text-[11px] tracking-[0.2em] text-muted-ink font-medium">
         EVENT LOG · {alerts.length}
       </p>
       <ScrollArea className="thin-scroll pointer-events-auto max-h-[52vh]">
-        <div className="flex flex-col gap-2 pr-1">
+        <div className="flex flex-col gap-2.5 pr-1">
           {alerts.map((alert) => {
             const sos = alert.sos === true;
             const severity: AssetStatus = sos ? "critical" : alert.severity;
@@ -32,30 +32,30 @@ export function AlertStack({ alerts }: { alerts: Alert[] }) {
               <article
                 key={alert.id}
                 className={cn(
-                  "animate-alert-in pointer-events-auto rounded-md border border-white/8 border-l-2 bg-panel/95 px-3 py-2 backdrop-blur",
+                  "animate-alert-in pointer-events-auto rounded-xl border border-white/10 border-l-[3px] bg-panel/95 px-4 py-3 backdrop-blur-md shadow-lg",
                   SEVERITY_BORDER[severity],
-                  sos && "bg-critical/10 shadow-[0_0_18px_rgba(212,93,93,0.3)]",
+                  sos && "bg-critical/8 shadow-[0_0_24px_rgba(212,93,93,0.2)]",
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-2">
-                    <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-ink">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-ink font-medium">
                       {SEVERITY_TAG[severity]}
                     </span>
                     {sos && (
                       <Badge
                         variant="destructive"
-                        className="h-4 rounded-sm px-1.5 font-mono text-[8px] uppercase tracking-[0.2em]"
+                        className="h-5 rounded-md px-2 font-mono text-[10px] uppercase tracking-[0.15em] font-semibold"
                       >
                         PRIORITY
                       </Badge>
                     )}
                   </span>
-                  <time className="font-mono text-[9px] tabular-nums text-muted-ink">
+                  <time className="font-mono text-[10px] tabular-nums text-muted-ink">
                     {alert.timestamp.slice(11, 19)}Z
                   </time>
                 </div>
-                <p className="mt-1 text-xs leading-snug text-ice">{alert.message}</p>
+                <p className="mt-1.5 text-[13px] leading-snug text-ice">{alert.message}</p>
               </article>
             );
           })}

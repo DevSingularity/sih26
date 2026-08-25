@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -43,47 +42,45 @@ export default function FieldUpdatesPage() {
   };
 
   return (
-    <div className="p-4 space-y-4">
-      <h1 className="font-display text-lg font-bold tracking-[0.2em] text-ice uppercase">
+    <div className="p-5 space-y-5">
+      <h1 className="font-display text-xl font-bold tracking-[0.15em] text-ice uppercase">
         Field Updates
       </h1>
 
-      <Card className="border-white/8 bg-panel/60">
-        <CardHeader><CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">NEW UPDATE</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <Input
-            placeholder="Activity (e.g., Cargo offloading, Antenna maintenance)"
-            value={activity}
-            onChange={(e) => setActivity(e.target.value)}
-            className="bg-white/5 border-white/8 text-ice font-mono text-xs"
-          />
-          <Input
-            placeholder="Site conditions (visibility, wind, temp)"
-            value={conditions}
-            onChange={(e) => setConditions(e.target.value)}
-            className="bg-white/5 border-white/8 text-ice font-mono text-xs"
-          />
-          <Textarea
-            placeholder="Additional notes"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="bg-white/5 border-white/8 text-ice font-mono text-xs"
-          />
-          <div className="flex items-center gap-3">
-            <Button onClick={handleSubmit} className="font-mono text-[9px] tracking-[0.2em] uppercase" disabled={!activity}>
-              SUBMIT
-            </Button>
-            <Badge variant="outline" className={`font-mono text-[8px] ${isOnline ? "border-ok/40 bg-ok/10 text-ok" : "border-warn/40 bg-warn/10 text-warn"}`}>
-              {isOnline ? "ONLINE" : "OFFLINE — WILL QUEUE"}
+      <div className="card-panel p-5 space-y-4">
+        <h2 className="label-mono">NEW UPDATE</h2>
+        <Input
+          placeholder="Activity (e.g., Cargo offloading, Antenna maintenance)"
+          value={activity}
+          onChange={(e) => setActivity(e.target.value)}
+          className="bg-white/5 border-white/10 text-ice font-mono text-xs h-10"
+        />
+        <Input
+          placeholder="Site conditions (visibility, wind, temp)"
+          value={conditions}
+          onChange={(e) => setConditions(e.target.value)}
+          className="bg-white/5 border-white/10 text-ice font-mono text-xs h-10"
+        />
+        <Textarea
+          placeholder="Additional notes"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          className="bg-white/5 border-white/10 text-ice font-mono text-xs min-h-[80px]"
+        />
+        <div className="flex items-center gap-3">
+          <Button onClick={handleSubmit} className="font-mono text-[11px] tracking-[0.15em] uppercase h-9" disabled={!activity}>
+            SUBMIT
+          </Button>
+          <Badge variant="outline" className={`font-mono text-[10px] h-5 px-2 ${isOnline ? "border-ok/40 bg-ok/10 text-ok" : "border-warn/40 bg-warn/10 text-warn"}`}>
+            {isOnline ? "ONLINE" : "OFFLINE — WILL QUEUE"}
+          </Badge>
+          {submitted && (
+            <Badge variant="outline" className="border-ok/40 bg-ok/10 text-ok font-mono text-[10px] h-5 px-2 animate-fade-in">
+              SUBMITTED ✓
             </Badge>
-            {submitted && (
-              <Badge variant="outline" className="border-ok/40 bg-ok/10 text-ok font-mono text-[8px]">
-                SUBMITTED ✓
-              </Badge>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

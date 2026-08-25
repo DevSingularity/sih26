@@ -1,9 +1,9 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Shield, Zap, Navigation } from "lucide-react";
 
 const ROUTES = [
   {
@@ -13,6 +13,7 @@ const ROUTES = [
     recommended: true,
     eta: "72h remaining",
     risk: "Low",
+    icon: Navigation,
     details: "Standard southern ocean route. Weather window favorable for next 48h. Fuel consumption nominal.",
   },
   {
@@ -22,6 +23,7 @@ const ROUTES = [
     recommended: false,
     eta: "96h estimated",
     risk: "Medium",
+    icon: Zap,
     details: "Bypasses Cape Town resupply. Higher risk due to direct southern crossing. Use only for critical personnel evacuation.",
   },
   {
@@ -31,6 +33,7 @@ const ROUTES = [
     recommended: true,
     eta: "Pending departure",
     risk: "Low",
+    icon: Shield,
     details: "Fuel bladder resupply for Bharati station. Pre-positioned at Cape Town depot. Awaiting weather clearance.",
   },
 ];
@@ -43,50 +46,54 @@ const STATUS_CLS: Record<string, string> = {
 
 export default function HqRoutingPage() {
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="font-display text-xl font-bold tracking-[0.2em] text-ice uppercase">
+    <div className="p-8 space-y-6">
+      <h1 className="font-display text-2xl font-bold tracking-[0.15em] text-ice uppercase">
         Route Optimizer
       </h1>
 
       <div className="space-y-4">
-        {ROUTES.map((route) => (
-          <Card key={route.id} className={cn("border-white/8 bg-panel/60", route.recommended && "border-ok/20")}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <CardTitle className="font-display text-sm font-semibold tracking-[0.15em] text-ice">
-                    {route.name}
-                  </CardTitle>
-                  {route.recommended && (
-                    <Badge className="h-4 rounded-sm border-ok/40 bg-ok/10 px-1.5 font-mono text-[8px] tracking-[0.14em] text-ok">
-                      RECOMMENDED
+        {ROUTES.map((route, i) => {
+          const Icon = route.icon;
+          return (
+            <div key={route.id} className={cn("card-panel p-6 animate-fade-in", route.recommended && "border-ok/15")} style={{ animationDelay: `${i * 60}ms` }}>
+              <div className="flex items-start gap-4">
+                <div className={cn("rounded-xl p-3 shrink-0", route.recommended ? "bg-ok/10" : "bg-white/5")}>
+                  <Icon className={cn("size-5", route.recommended ? "text-ok" : "text-muted-ink")} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="font-display text-base font-semibold tracking-[0.1em] text-ice">
+                      {route.name}
+                    </h3>
+                    {route.recommended && (
+                      <Badge className="h-5 rounded-md border-ok/40 bg-ok/10 px-2 font-mono text-[10px] tracking-[0.12em] text-ok font-medium">
+                        RECOMMENDED
+                      </Badge>
+                    )}
+                    <Badge variant="outline" className={cn("h-5 rounded-md px-2 font-mono text-[10px] tracking-[0.14em] font-medium", STATUS_CLS[route.status])}>
+                      {route.status}
                     </Badge>
-                  )}
+                  </div>
+                  <p className="text-[13px] text-ice/70 mb-3">{route.details}</p>
+                  <div className="flex items-center gap-6">
+                    <div>
+                      <span className="label-mono-sm">ETA</span>
+                      <p className="value-mono text-[12px] mt-0.5">{route.eta}</p>
+                    </div>
+                    <div>
+                      <span className="label-mono-sm">RISK</span>
+                      <p className={cn("value-mono text-[12px] mt-0.5", route.risk === "Low" ? "text-ok" : "text-warn")}>{route.risk}</p>
+                    </div>
+                    <div className="flex-1" />
+                    <Button variant="outline" size="sm" className="font-mono text-[10px] tracking-[0.15em] uppercase h-8 px-4">
+                      SELECT ROUTE
+                    </Button>
+                  </div>
                 </div>
-                <Badge variant="outline" className={cn("h-5 rounded-sm px-2 font-mono text-[8px] tracking-[0.18em]", STATUS_CLS[route.status])}>
-                  {route.status}
-                </Badge>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-xs text-ice/80">{route.details}</p>
-              <div className="flex items-center gap-6">
-                <div>
-                  <span className="font-mono text-[9px] text-muted-ink">ETA</span>
-                  <p className="font-mono text-xs text-ice">{route.eta}</p>
-                </div>
-                <div>
-                  <span className="font-mono text-[9px] text-muted-ink">RISK</span>
-                  <p className={cn("font-mono text-xs", route.risk === "Low" ? "text-ok" : "text-warn")}>{route.risk}</p>
-                </div>
-                <div className="flex-1" />
-                <Button variant="outline" size="xs" className="font-mono text-[8px] tracking-[0.2em] uppercase">
-                  SELECT ROUTE
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
