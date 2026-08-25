@@ -86,8 +86,8 @@
   --accent: #182130;
   --accent-foreground: #c9d6dd;
   --destructive: #d45d5d;
-  --border: color-mix(in oklab, #c9d6dd 12%, transparent);
-  --input: color-mix(in oklab, #c9d6dd 16%, #121822);
+  --border: color-mix(in oklab, #c9d6dd 15%, transparent);
+  --input: color-mix(in oklab, #c9d6dd 18%, #121822);
   --ring: #4fa3a3;
   --chart-1: #4fa3a3;
   --chart-2: #e0a64a;
@@ -101,52 +101,7 @@
   --sidebar-primary-foreground: #0b0f14;
   --sidebar-accent: #182130;
   --sidebar-accent-foreground: #c9d6dd;
-  --sidebar-border: color-mix(in oklab, #c9d6dd 12%, transparent);
-  --sidebar-ring: #4fa3a3;
-}
-
-.dark {
-  --bg-deep: #0b0f14;
-  --bg-panel: #121822;
-  --ice: #c9d6dd;
-  --muted-ink: #6b7a85;
-  --signal-ok: #4fa3a3;
-  --signal-warn: #e0a64a;
-  --signal-critical: #d45d5d;
-  --accent-blue: #4f7fe0;
-  --accent-purple: #8b5cf6;
-  --accent-amber: #f59e0b;
-
-  --background: #0b0f14;
-  --foreground: #c9d6dd;
-  --card: #121822;
-  --card-foreground: #c9d6dd;
-  --popover: #121822;
-  --popover-foreground: #c9d6dd;
-  --primary: #4fa3a3;
-  --primary-foreground: #0b0f14;
-  --secondary: #121822;
-  --secondary-foreground: #c9d6dd;
-  --muted: #182130;
-  --muted-foreground: #6b7a85;
-  --accent: #182130;
-  --accent-foreground: #c9d6dd;
-  --destructive: #d45d5d;
-  --border: color-mix(in oklab, #c9d6dd 12%, transparent);
-  --input: color-mix(in oklab, #c9d6dd 16%, #121822);
-  --ring: #4fa3a3;
-  --chart-1: #4fa3a3;
-  --chart-2: #e0a64a;
-  --chart-3: #d45d5d;
-  --chart-4: #c9d6dd;
-  --chart-5: #6b7a85;
-  --sidebar: #121822;
-  --sidebar-foreground: #c9d6dd;
-  --sidebar-primary: #4fa3a3;
-  --sidebar-primary-foreground: #0b0f14;
-  --sidebar-accent: #182130;
-  --sidebar-accent-foreground: #c9d6dd;
-  --sidebar-border: color-mix(in oklab, #c9d6dd 12%, transparent);
+  --sidebar-border: color-mix(in oklab, #c9d6dd 15%, transparent);
   --sidebar-ring: #4fa3a3;
 }
 
@@ -162,6 +117,7 @@
   }
 }
 
+/* ── Map ─────────────────────────────────────────── */
 .leaflet-container {
   background: var(--bg-deep);
 }
@@ -170,7 +126,7 @@ html .leaflet-control-attribution {
   background: transparent;
   color: var(--muted-ink);
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10px;
 }
 
 html .leaflet-control-attribution a {
@@ -185,21 +141,22 @@ html .leaflet-bar a {
 
 .leaflet-tooltip.polar-tip {
   background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  box-shadow: none;
+  border: 1px solid color-mix(in oklab, var(--ice) 18%, transparent);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
   color: var(--ice);
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  padding: 2px 6px;
+  padding: 4px 10px;
 }
 
 .leaflet-tooltip.polar-tip::before {
   display: none;
 }
 
+/* ── Animations ──────────────────────────────────── */
 @keyframes pulse-ring {
   0% {
     transform: scale(0.55);
@@ -246,6 +203,105 @@ html .leaflet-bar a {
   animation: alert-in 280ms ease-out both;
 }
 
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Utility Classes ─────────────────────────────── */
+.card-panel {
+  border: 1px solid color-mix(in oklab, var(--ice) 8%, transparent);
+  background: color-mix(in oklab, var(--bg-panel) 60%, transparent);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(8px);
+  transition: all 200ms ease;
+}
+
+.card-panel:hover {
+  border-color: color-mix(in oklab, var(--ice) 14%, transparent);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.25), 0 0 0 1px color-mix(in oklab, var(--ice) 6%, transparent);
+}
+
+.card-panel-static {
+  border: 1px solid color-mix(in oklab, var(--ice) 8%, transparent);
+  background: color-mix(in oklab, var(--bg-panel) 60%, transparent);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(8px);
+}
+
+.label-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted-ink);
+}
+
+.label-mono-sm {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted-ink);
+}
+
+.value-mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ice);
+  letter-spacing: 0.02em;
+}
+
+.table-row-hover {
+  transition: background-color 150ms ease;
+}
+.table-row-hover:hover {
+  background: color-mix(in oklab, var(--ice) 4%, transparent);
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--ice) 4%, transparent) 0%,
+    color-mix(in oklab, var(--ice) 8%, transparent) 50%,
+    color-mix(in oklab, var(--ice) 4%, transparent) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+.animate-fade-in {
+  animation: fade-in-up 300ms ease-out both;
+}
+
+.animate-slide-down {
+  animation: slide-down 300ms ease-out both;
+}
+
+/* ── Scrollbar ───────────────────────────────────── */
 .thin-scroll {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in oklab, var(--muted-ink) 40%, transparent) transparent;

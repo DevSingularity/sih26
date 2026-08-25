@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { useStationContext } from "@/app/station/layout";
 import { useCargo, useInventory } from "@/hooks/use-cargo";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { CargoCustodyState } from "@/lib/types";
 
@@ -27,47 +24,47 @@ export default function StationCargoPage() {
   );
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="font-display text-xl font-bold tracking-[0.2em] text-ice uppercase">
+    <div className="p-8 space-y-6">
+      <h1 className="font-display text-2xl font-bold tracking-[0.15em] text-ice uppercase">
         {station.toUpperCase()} Cargo & Inventory
       </h1>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="border-white/8 bg-panel/60">
-          <CardHeader><CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">STOCK LEVELS</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="card-panel-static p-5">
+          <h2 className="label-mono mb-4">STOCK LEVELS</h2>
+          <div className="space-y-3">
             {snapshots.map((s) => (
-              <div key={s.itemType} className="flex items-center justify-between rounded-md border border-white/8 bg-white/3 px-3 py-2">
-                <span className="font-mono text-[9px] text-ice">{s.itemType.toUpperCase()}</span>
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs text-ice">{s.stockQty} units</span>
-                  <span className="font-mono text-[8px] text-muted-ink">-{s.consumptionRate}/day</span>
+              <div key={s.itemType} className="flex items-center justify-between rounded-xl border border-white/8 bg-white/4 px-4 py-3 table-row-hover">
+                <span className="value-mono text-[12px]">{s.itemType.toUpperCase()}</span>
+                <div className="flex items-center gap-4">
+                  <span className="value-mono text-[12px]">{s.stockQty} units</span>
+                  <span className="font-mono text-[10px] text-muted-ink">-{s.consumptionRate}/day</span>
                 </div>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="border-white/8 bg-panel/60">
-          <CardHeader><CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">INCOMING CARGO ({stationItems.length})</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
+        <div className="card-panel-static p-5">
+          <h2 className="label-mono mb-4">INCOMING CARGO ({stationItems.length})</h2>
+          <div className="space-y-3">
             {stationItems.length === 0 ? (
-              <p className="font-mono text-[9px] text-muted-ink">NO CARGO ITEMS</p>
+              <p className="value-mono text-muted-ink py-4 text-center">No cargo items</p>
             ) : (
               stationItems.map((item) => (
-                <div key={item.id} className="flex items-center justify-between rounded-md border border-white/8 bg-white/3 px-3 py-2">
-                  <div>
-                    <span className="font-mono text-[9px] text-ice">{item.category}</span>
-                    <span className="ml-2 font-mono text-[8px] text-muted-ink">{item.qrCode}</span>
+                <div key={item.id} className="flex items-center justify-between rounded-xl border border-white/8 bg-white/4 px-4 py-3 table-row-hover">
+                  <div className="flex items-center gap-3">
+                    <span className="value-mono text-[12px]">{item.category}</span>
+                    <span className="font-mono text-[10px] text-muted-ink">{item.qrCode}</span>
                   </div>
-                  <Badge variant="outline" className={cn("h-4 rounded-sm px-1.5 font-mono text-[8px]", CUSTODY_CLS[item.custodyState])}>
+                  <Badge variant="outline" className={cn("h-5 rounded-md px-2 font-mono text-[10px]", CUSTODY_CLS[item.custodyState])}>
                     {item.custodyState}
                   </Badge>
                 </div>
               ))
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

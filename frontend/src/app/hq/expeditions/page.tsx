@@ -2,20 +2,18 @@
 
 import { useState } from "react";
 import { useExpeditions } from "@/hooks/use-expeditions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import type { Expedition } from "@/lib/types";
 import Link from "next/link";
 
-const STATUS_CLS = {
+const STATUS_CLS: Record<string, string> = {
   PLANNED: "border-accent-blue/40 bg-accent-blue/10 text-accent-blue",
   ACTIVE: "border-ok/40 bg-ok/10 text-ok",
   COMPLETED: "border-muted-ink/40 bg-muted-ink/10 text-muted-ink",
-} as const;
+};
 
 export default function ExpeditionsPage() {
   const { expeditions, createExpedition } = useExpeditions();
@@ -41,54 +39,51 @@ export default function ExpeditionsPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-xl font-bold tracking-[0.2em] text-ice uppercase">
+        <h1 className="font-display text-2xl font-bold tracking-[0.15em] text-ice uppercase">
           Expeditions
         </h1>
-        <Button variant="outline" size="sm" onClick={() => setShowForm(!showForm)} className="font-mono text-[9px] tracking-[0.2em] uppercase">
+        <Button variant="outline" size="sm" onClick={() => setShowForm(!showForm)} className="font-mono text-[11px] tracking-[0.15em] uppercase h-9 px-4">
           {showForm ? "CANCEL" : "+ NEW EXPEDITION"}
         </Button>
       </div>
 
       {showForm && (
-        <Card className="border-white/8 bg-panel/60">
-          <CardHeader>
-            <CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">CREATE EXPEDITION</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Input placeholder="Expedition name" value={name} onChange={(e) => setName(e.target.value)} className="bg-white/5 border-white/8 text-ice font-mono text-xs" />
-            <Input placeholder="Route (comma-separated: india, cape-town, maitri)" value={route} onChange={(e) => setRoute(e.target.value)} className="bg-white/5 border-white/8 text-ice font-mono text-xs" />
-            <Input type="date" placeholder="Start date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-white/5 border-white/8 text-ice font-mono text-xs" />
-            <Textarea placeholder="Cargo requirement summary" value={summary} onChange={(e) => setSummary(e.target.value)} className="bg-white/5 border-white/8 text-ice font-mono text-xs" />
-            <Button onClick={handleCreate} className="font-mono text-[9px] tracking-[0.2em] uppercase">CREATE</Button>
-          </CardContent>
-        </Card>
+        <div className="card-panel p-6 animate-slide-down">
+          <h3 className="label-mono mb-4">CREATE EXPEDITION</h3>
+          <div className="space-y-3">
+            <Input placeholder="Expedition name" value={name} onChange={(e) => setName(e.target.value)} className="bg-white/5 border-white/10 text-ice font-mono text-xs h-10" />
+            <Input placeholder="Route (comma-separated: india, cape-town, maitri)" value={route} onChange={(e) => setRoute(e.target.value)} className="bg-white/5 border-white/10 text-ice font-mono text-xs h-10" />
+            <Input type="date" placeholder="Start date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-white/5 border-white/10 text-ice font-mono text-xs h-10" />
+            <Textarea placeholder="Cargo requirement summary" value={summary} onChange={(e) => setSummary(e.target.value)} className="bg-white/5 border-white/10 text-ice font-mono text-xs min-h-[80px]" />
+            <Button onClick={handleCreate} className="font-mono text-[11px] tracking-[0.15em] uppercase h-9">CREATE</Button>
+          </div>
+        </div>
       )}
 
-      <div className="space-y-3">
-        {expeditions.map((exp) => (
+      <div className="space-y-4">
+        {expeditions.map((exp, i) => (
           <Link key={exp.id} href={`/hq/expeditions/${exp.id}`}>
-            <Card className="border-white/8 bg-panel/60 hover:border-white/15 transition-colors cursor-pointer">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="font-display text-sm font-semibold tracking-[0.15em] text-ice">
-                    {exp.name}
-                  </CardTitle>
-                  <Badge variant="outline" className={cn("h-5 rounded-sm px-2 font-mono text-[8px] tracking-[0.18em]", STATUS_CLS[exp.status])}>
-                    {exp.status}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4 text-xs text-muted-ink">
-                  <span className="font-mono text-[9px]">ROUTE: {exp.route.join(" → ").toUpperCase()}</span>
-                  <span className="font-mono text-[9px]">START: {exp.startDate}</span>
-                  <span className="font-mono text-[9px]">CREATOR: {exp.createdBy}</span>
-                </div>
-                <p className="mt-2 font-mono text-[9px] text-muted-ink">{exp.cargoRequirementSummary}</p>
-              </CardContent>
-            </Card>
+            <div
+              className="card-panel p-5 cursor-pointer animate-fade-in"
+              style={{ animationDelay: `${i * 50}ms` }}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-display text-base font-semibold tracking-[0.12em] text-ice">
+                  {exp.name}
+                </h3>
+                <Badge variant="outline" className={cn("h-5 rounded-md px-2.5 font-mono text-[10px] tracking-[0.14em]", STATUS_CLS[exp.status])}>
+                  {exp.status}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-5 text-muted-ink">
+                <span className="font-mono text-[11px]">ROUTE: {exp.route.join(" → ").toUpperCase()}</span>
+                <span className="font-mono text-[11px]">START: {exp.startDate}</span>
+                <span className="font-mono text-[11px]">CREATOR: {exp.createdBy}</span>
+              </div>
+              <p className="mt-2 font-mono text-[11px] text-muted-ink/80">{exp.cargoRequirementSummary}</p>
+            </div>
           </Link>
         ))}
       </div>

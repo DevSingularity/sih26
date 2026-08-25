@@ -2,7 +2,6 @@
 
 import { useStationContext } from "@/app/station/layout";
 import { useWaste } from "@/hooks/use-waste";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -17,39 +16,37 @@ export default function StationWastePage() {
   const { entries } = useWaste(station);
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="font-display text-xl font-bold tracking-[0.2em] text-ice uppercase">
+    <div className="p-8 space-y-6">
+      <h1 className="font-display text-2xl font-bold tracking-[0.15em] text-ice uppercase">
         {station.toUpperCase()} Waste & Compliance
       </h1>
 
-      <Card className="border-white/8 bg-panel/60">
-        <CardContent className="p-0">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/8">
-                <th className="px-4 py-3 text-left font-mono text-[9px] tracking-[0.22em] text-muted-ink">DATE</th>
-                <th className="px-4 py-3 text-left font-mono text-[9px] tracking-[0.22em] text-muted-ink">CATEGORY</th>
-                <th className="px-4 py-3 text-left font-mono text-[9px] tracking-[0.22em] text-muted-ink">QUANTITY (KG)</th>
-                <th className="px-4 py-3 text-left font-mono text-[9px] tracking-[0.22em] text-muted-ink">METHOD</th>
+      <div className="card-panel-static overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-white/10 bg-white/3">
+              <th className="px-5 py-3.5 text-left font-mono text-[10px] tracking-[0.18em] text-muted-ink font-medium">DATE</th>
+              <th className="px-5 py-3.5 text-left font-mono text-[10px] tracking-[0.18em] text-muted-ink font-medium">CATEGORY</th>
+              <th className="px-5 py-3.5 text-left font-mono text-[10px] tracking-[0.18em] text-muted-ink font-medium">QUANTITY (KG)</th>
+              <th className="px-5 py-3.5 text-left font-mono text-[10px] tracking-[0.18em] text-muted-ink font-medium">METHOD</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((entry, i) => (
+              <tr key={entry.id} className={cn("border-b border-white/5 table-row-hover", i % 2 === 0 ? "bg-white/2" : "")}>
+                <td className="px-5 py-3 font-mono text-[11px] text-muted-ink">{entry.loggedAt.slice(0, 10)}</td>
+                <td className="px-5 py-3 value-mono text-[12px]">{entry.category}</td>
+                <td className="px-5 py-3 value-mono text-[12px]">{entry.quantityKg}</td>
+                <td className="px-5 py-3">
+                  <Badge variant="outline" className={cn("h-5 rounded-md px-2 font-mono text-[10px]", METHOD_CLS[entry.method])}>
+                    {entry.method}
+                  </Badge>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {entries.map((entry) => (
-                <tr key={entry.id} className="border-b border-white/5 hover:bg-white/3">
-                  <td className="px-4 py-2.5 font-mono text-[9px] text-muted-ink">{entry.loggedAt.slice(0, 10)}</td>
-                  <td className="px-4 py-2.5 font-mono text-[9px] text-ice">{entry.category}</td>
-                  <td className="px-4 py-2.5 font-mono text-[9px] text-ice">{entry.quantityKg}</td>
-                  <td className="px-4 py-2.5">
-                    <Badge variant="outline" className={cn("h-4 rounded-sm px-1.5 font-mono text-[8px]", METHOD_CLS[entry.method])}>
-                      {entry.method}
-                    </Badge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useStationContext } from "@/app/station/layout";
 import { useSyncStatus } from "@/hooks/use-sync-status";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -19,48 +18,44 @@ export default function StationSyncPage() {
   const stationItems = items.filter((i) => i.station === station);
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="font-display text-xl font-bold tracking-[0.2em] text-ice uppercase">
+    <div className="p-8 space-y-6">
+      <h1 className="font-display text-2xl font-bold tracking-[0.15em] text-ice uppercase">
         {station.toUpperCase()} Sync Status
       </h1>
 
       <div className="grid grid-cols-3 gap-4">
-        <Card className="border-white/8 bg-panel/60">
-          <CardHeader><CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">PENDING</CardTitle></CardHeader>
-          <CardContent><span className="font-display text-3xl font-bold text-accent-amber">{pendingCount}</span></CardContent>
-        </Card>
-        <Card className="border-white/8 bg-panel/60">
-          <CardHeader><CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">SYNCED</CardTitle></CardHeader>
-          <CardContent><span className="font-display text-3xl font-bold text-ok">{syncedCount}</span></CardContent>
-        </Card>
-        <Card className="border-white/8 bg-panel/60">
-          <CardHeader><CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">FAILED</CardTitle></CardHeader>
-          <CardContent><span className="font-display text-3xl font-bold text-critical">{failedCount}</span></CardContent>
-        </Card>
+        {[
+          { label: "PENDING", value: pendingCount, accent: "text-accent-amber" },
+          { label: "SYNCED", value: syncedCount, accent: "text-ok" },
+          { label: "FAILED", value: failedCount, accent: "text-critical" },
+        ].map((stat) => (
+          <div key={stat.label} className="card-panel p-5">
+            <span className="label-mono mb-2 block">{stat.label}</span>
+            <span className={cn("font-display text-4xl font-bold", stat.accent)}>{stat.value}</span>
+          </div>
+        ))}
       </div>
 
-      <Card className="border-white/8 bg-panel/60">
-        <CardHeader><CardTitle className="font-mono text-[9px] tracking-[0.22em] text-muted-ink">SYNC QUEUE</CardTitle></CardHeader>
-        <CardContent className="space-y-2">
+      <div className="card-panel-static p-5">
+        <h2 className="label-mono mb-4">SYNC QUEUE</h2>
+        <div className="space-y-3">
           {stationItems.length === 0 ? (
-            <p className="font-mono text-[9px] text-muted-ink">NO QUEUE ITEMS</p>
+            <p className="value-mono text-muted-ink py-4 text-center">No queue items</p>
           ) : (
-            stationItems.map((item) => (
-              <div key={item.id} className="flex items-center justify-between rounded-md border border-white/8 bg-white/3 px-3 py-2">
-                <div className="flex-1">
-                  <span className="font-mono text-[9px] text-ice">{item.action}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Badge variant="outline" className={cn("h-4 rounded-sm px-1.5 font-mono text-[8px]", STATUS_CLS[item.status])}>
+            stationItems.map((item, i) => (
+              <div key={item.id} className="flex items-center justify-between rounded-xl border border-white/8 bg-white/4 px-4 py-3 table-row-hover animate-fade-in" style={{ animationDelay: `${i * 40}ms` }}>
+                <span className="value-mono text-[12px] flex-1 min-w-0 truncate">{item.action}</span>
+                <div className="flex items-center gap-3 shrink-0 ml-4">
+                  <Badge variant="outline" className={cn("h-5 rounded-md px-2 font-mono text-[10px]", STATUS_CLS[item.status])}>
                     {item.status}
                   </Badge>
-                  <time className="font-mono text-[8px] tabular-nums text-muted-ink">{item.queuedAt.slice(5, 16).replace("T", " ")}</time>
+                  <time className="font-mono text-[10px] tabular-nums text-muted-ink">{item.queuedAt.slice(5, 16).replace("T", " ")}</time>
                 </div>
               </div>
             ))
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

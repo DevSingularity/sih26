@@ -46,15 +46,15 @@ export function AppNav({ variant }: { variant: "hq" | "station" }) {
   const links = variant === "hq" ? HQ_LINKS : STATION_LINKS;
 
   return (
-    <nav className="flex flex-col gap-1 p-2">
+    <nav className="flex flex-col gap-0.5 p-3">
       <Link
         href="/"
-        className="flex items-center gap-2 rounded-md px-3 py-2 font-mono text-[9px] tracking-[0.22em] text-muted-ink hover:text-ice transition-colors mb-2"
+        className="flex items-center gap-2 rounded-lg px-3 py-2.5 font-mono text-[11px] tracking-[0.16em] text-muted-ink hover:text-ice hover:bg-white/5 transition-all duration-200 mb-1"
       >
-        <Home className="size-3" />
+        <Home className="size-4" />
         SWITCH CONSOLE
       </Link>
-      <div className="h-px bg-white/8 mb-2" />
+      <div className="h-px bg-white/10 my-1" />
       {links.map((link) => {
         const Icon = link.icon;
         const isActive =
@@ -66,13 +66,13 @@ export function AppNav({ variant }: { variant: "hq" | "station" }) {
             key={link.href}
             href={link.href}
             className={cn(
-              "flex items-center gap-2 rounded-md px-3 py-2 font-mono text-[10px] tracking-[0.22em] uppercase transition-colors",
+              "flex items-center gap-2.5 rounded-lg px-3 py-2 font-mono text-[11px] tracking-[0.15em] uppercase transition-all duration-200",
               isActive
-                ? "bg-ok/10 text-ok border-l-2 border-ok"
-                : "text-muted-ink hover:text-ice hover:bg-white/5 border-l-2 border-transparent",
+                ? "bg-ok/12 text-ok border-l-[3px] border-ok shadow-[inset_0_0_12px_rgba(79,163,163,0.08)]"
+                : "text-muted-ink hover:text-ice hover:bg-white/5 border-l-[3px] border-transparent",
             )}
           >
-            <Icon className="size-3.5" />
+            <Icon className="size-4" />
             {link.label}
           </Link>
         );

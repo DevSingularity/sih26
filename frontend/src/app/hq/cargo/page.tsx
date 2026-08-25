@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useCargo } from "@/hooks/use-cargo";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -19,23 +18,23 @@ const CUSTODY_CLS: Record<CargoCustodyState, string> = {
 const CUSTODY_OPTIONS: CargoCustodyState[] = ["INDENTED", "DISPATCHED", "IN_TRANSIT", "INWARD", "ISSUED"];
 
 export default function HqCargoPage() {
-  const { items, loading } = useCargo();
+  const { items } = useCargo();
   const [filter, setFilter] = useState<CargoCustodyState | "ALL">("ALL");
 
   const filtered = filter === "ALL" ? items : items.filter((c) => c.custodyState === filter);
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-xl font-bold tracking-[0.2em] text-ice uppercase">
+    <div className="p-8 space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <h1 className="font-display text-2xl font-bold tracking-[0.15em] text-ice uppercase">
           Cargo Readiness
         </h1>
-        <div className="flex gap-1">
+        <div className="flex gap-1.5 flex-wrap">
           <Button
             variant={filter === "ALL" ? "default" : "outline"}
-            size="xs"
+            size="sm"
             onClick={() => setFilter("ALL")}
-            className="font-mono text-[8px] tracking-[0.2em] uppercase"
+            className="font-mono text-[10px] tracking-[0.14em] uppercase h-8"
           >
             ALL ({items.length})
           </Button>
@@ -43,9 +42,9 @@ export default function HqCargoPage() {
             <Button
               key={state}
               variant={filter === state ? "default" : "outline"}
-              size="xs"
+              size="sm"
               onClick={() => setFilter(state)}
-              className="font-mono text-[8px] tracking-[0.14em] uppercase"
+              className="font-mono text-[10px] tracking-[0.1em] uppercase h-8"
             >
               {state} ({items.filter((c) => c.custodyState === state).length})
             </Button>
@@ -53,38 +52,36 @@ export default function HqCargoPage() {
         </div>
       </div>
 
-      <Card className="border-white/8 bg-panel/60">
-        <CardContent className="p-0">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/8">
-                <th className="px-4 py-3 text-left font-mono text-[9px] tracking-[0.22em] text-muted-ink">ID</th>
-                <th className="px-4 py-3 text-left font-mono text-[9px] tracking-[0.22em] text-muted-ink">CATEGORY</th>
-                <th className="px-4 py-3 text-left font-mono text-[9px] tracking-[0.22em] text-muted-ink">EXPEDITION</th>
-                <th className="px-4 py-3 text-left font-mono text-[9px] tracking-[0.22em] text-muted-ink">LOCATION</th>
-                <th className="px-4 py-3 text-left font-mono text-[9px] tracking-[0.22em] text-muted-ink">QR CODE</th>
-                <th className="px-4 py-3 text-left font-mono text-[9px] tracking-[0.22em] text-muted-ink">STATUS</th>
+      <div className="card-panel-static overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-white/10 bg-white/3">
+              <th className="px-5 py-3.5 text-left font-mono text-[10px] tracking-[0.18em] text-muted-ink font-medium">ID</th>
+              <th className="px-5 py-3.5 text-left font-mono text-[10px] tracking-[0.18em] text-muted-ink font-medium">CATEGORY</th>
+              <th className="px-5 py-3.5 text-left font-mono text-[10px] tracking-[0.18em] text-muted-ink font-medium">EXPEDITION</th>
+              <th className="px-5 py-3.5 text-left font-mono text-[10px] tracking-[0.18em] text-muted-ink font-medium">LOCATION</th>
+              <th className="px-5 py-3.5 text-left font-mono text-[10px] tracking-[0.18em] text-muted-ink font-medium">QR CODE</th>
+              <th className="px-5 py-3.5 text-left font-mono text-[10px] tracking-[0.18em] text-muted-ink font-medium">STATUS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((item, i) => (
+              <tr key={item.id} className={cn("border-b border-white/5 table-row-hover", i % 2 === 0 ? "bg-white/2" : "")}>
+                <td className="px-5 py-3 font-mono text-[11px] text-muted-ink">{item.id}</td>
+                <td className="px-5 py-3 value-mono text-[11px]">{item.category}</td>
+                <td className="px-5 py-3 font-mono text-[11px] text-muted-ink">{item.expeditionId}</td>
+                <td className="px-5 py-3 value-mono text-[11px]">{item.currentLocation.toUpperCase()}</td>
+                <td className="px-5 py-3 font-mono text-[11px] text-muted-ink">{item.qrCode}</td>
+                <td className="px-5 py-3">
+                  <Badge variant="outline" className={cn("h-5 rounded-md px-2 font-mono text-[10px] tracking-[0.12em]", CUSTODY_CLS[item.custodyState])}>
+                    {item.custodyState}
+                  </Badge>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {filtered.map((item) => (
-                <tr key={item.id} className="border-b border-white/5 hover:bg-white/3">
-                  <td className="px-4 py-2.5 font-mono text-[9px] text-muted-ink">{item.id}</td>
-                  <td className="px-4 py-2.5 font-mono text-[9px] text-ice">{item.category}</td>
-                  <td className="px-4 py-2.5 font-mono text-[9px] text-muted-ink">{item.expeditionId}</td>
-                  <td className="px-4 py-2.5 font-mono text-[9px] text-ice">{item.currentLocation.toUpperCase()}</td>
-                  <td className="px-4 py-2.5 font-mono text-[9px] text-muted-ink">{item.qrCode}</td>
-                  <td className="px-4 py-2.5">
-                    <Badge variant="outline" className={cn("h-4 rounded-sm px-1.5 font-mono text-[8px] tracking-[0.14em]", CUSTODY_CLS[item.custodyState])}>
-                      {item.custodyState}
-                    </Badge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
