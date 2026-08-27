@@ -170,7 +170,7 @@ class _FieldUpdatesScreenState extends State<FieldUpdatesScreen> {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: _attachmentPaths.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
                   itemBuilder: (context, index) {
                     final path = _attachmentPaths[index];
                     return Stack(
@@ -242,7 +242,7 @@ class _FieldUpdatesScreenState extends State<FieldUpdatesScreen> {
         }
         return ListView.separated(
           itemCount: rows.length,
-          separatorBuilder: (_, __) => const Divider(height: 1),
+          separatorBuilder: (_, _) => const Divider(height: 1),
           itemBuilder: (context, index) {
             final row = rows[index];
             final attachments = row.attachmentPaths == null
