@@ -1,3 +1,12 @@
 // PostgreSQL connection pool. See db/migrations/02_maitri_station_schema.sql.
 const { Pool } = require('pg');
-module.exports = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000,
+});
+pool.on('error', (err) => {
+  console.error('[db] unexpected pool error:', err.message);
+});
+module.exports = pool;

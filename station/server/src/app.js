@@ -14,4 +14,15 @@ app.use('/api/dashboard', require('./features/dashboard/routes'));
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
+// 404 catch-all
+app.use((_req, res) => {
+  res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Endpoint not found' } });
+});
+
+// Global error handler
+app.use((err, _req, res, _next) => {
+  console.error('[app] unhandled error:', err.message);
+  res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Internal server error' } });
+});
+
 module.exports = app;

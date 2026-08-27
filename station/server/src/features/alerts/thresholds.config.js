@@ -9,7 +9,6 @@
  * This could move to a DB-backed config later without schema changes.
  */
 module.exports = {
-  fuel_level: { warning: 30, critical: 15, unit: '%' },
-  power_reserve: { warning: 25, critical: 10, unit: '%' },
-  water_level: { warning: 20, critical: 10, unit: '%' },
+  fuel: { warning: 30, critical: 15, unit: '%' },
+  power: { warning: 25, critical: 10, unit: '%' },
 };

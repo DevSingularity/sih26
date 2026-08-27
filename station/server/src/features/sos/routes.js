@@ -1,8 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { listSOS, getSOSById, updateSOS } = require('./repository');
+const { listSOS, getSOSById } = require('./repository');
 const writeWithOutbox = require('../sync/outbox/writeWithOutbox');
 const pool = require('../../shared/config/db');
+
+const PATCHABLE_FIELDS = ['status', 'acknowledged_at', 'resolved_at'];
+const VALID_STATUSES = ['reported', 'acknowledged', 'resolved'];
 
 /**
  * GET /api/sos
@@ -50,7 +53,25 @@ router.patch('/:id', async (req, res) => {
       return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'SOS incident not found' } });
     }
 
-    const updatedFields = { ...existing, ...req.body, id: existing.id };
+    // Only allow patching specific fields
+    const updates = {};
+    for (const field of PATCHABLE_FIELDS) {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
+    }
+
+    if (updates.status && !VALID_STATUSES.includes(updates.status)) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: `Invalid status: ${updates.status}. Must be one of: ${VALID_STATUSES.join(', ')}` } });
+    }
+
+    if (Object.keys(updates).length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'No valid fields to update' } });
+    }
+
+    const updatedFields = { ...existing, ...updates, id: existing.id };
 
     await writeWithOutbox(client, {
       table: 'sos_incidents',

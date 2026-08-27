@@ -40,7 +40,7 @@ describe('checkThresholds', () => {
 
     const result = await checkThresholds(pool);
 
-    expect(result.alerts.length).toBeGreaterThanOrEqual(1);
+    expect(result.inserted).toBeGreaterThanOrEqual(1);
     const dieselAlert = result.alerts.find(a => a.metric.includes('Diesel'));
     expect(dieselAlert).toBeDefined();
     expect(dieselAlert.current_value).toBe(10);
@@ -122,8 +122,13 @@ describe('checkThresholds', () => {
     await checkThresholds(pool);
 
     const allAlerts = await pool.query(
-      "SELECT count(*) FROM local_threshold_alerts WHERE metric LIKE '%Bandages%'"
+      "SELECT id FROM local_threshold_alerts WHERE metric LIKE '%Bandages%' ORDER BY raised_at ASC"
     );
-    expect(parseInt(allAlerts.rows[0].count)).toBe(2);
+    expect(parseInt(allAlerts.rows.length)).toBe(2);
+    for (const row of allAlerts.rows) {
+      if (!testAlertIds.includes(row.id)) {
+        testAlertIds.push(row.id);
+      }
+    }
   });
 });

@@ -10,9 +10,7 @@ const SYNCABLE_TABLES = new Set([
   'local_threshold_alerts',
 ]);
 
-module.exports.SYNCABLE_TABLES = SYNCABLE_TABLES;
-
-module.exports = async function writeWithOutbox(client, { table, id, operation, row, priority = 'normal' }) {
+async function writeWithOutbox(client, { table, id, operation, row, priority = 'normal' }) {
   if (!SYNCABLE_TABLES.has(table)) {
     throw new Error(`writeWithOutbox: table "${table}" is not a syncable table`);
   }
@@ -71,4 +69,7 @@ module.exports = async function writeWithOutbox(client, { table, id, operation, 
     row: writtenRow,
     outboxEventId: outboxResult.rows[0].id,
   };
-};
+}
+
+module.exports = writeWithOutbox;
+module.exports.SYNCABLE_TABLES = SYNCABLE_TABLES;

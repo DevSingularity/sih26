@@ -7,9 +7,9 @@ const app = require('../app');
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const SECRET = process.env.DEVICE_JWT_SECRET || 'change-me';
 
-const TEST_DEVICE_ID = '11111111-1111-1111-1111-111111111111';
-const TEST_PERSONNEL_ID = '22222222-2222-2222-2222-222222222222';
-const TEST_SOS_ID = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+const TEST_DEVICE_ID = '88888888-8888-8888-8888-888888888888';
+const TEST_PERSONNEL_ID = '99999999-9999-9999-9999-999999999999';
+const TEST_SOS_ID = 'bbbbbbbb-cccc-dddd-eeee-ffffffffffff';
 
 let token;
 
@@ -27,8 +27,10 @@ beforeAll(async () => {
     [TEST_DEVICE_ID, TEST_PERSONNEL_ID]
   );
   token = jwt.sign({ device_id: TEST_DEVICE_ID, personnel_id: TEST_PERSONNEL_ID }, SECRET, { expiresIn: '1h' });
+});
 
-  // Seed a test SOS incident
+beforeEach(async () => {
+  // Re-seed SOS incident before each test (afterEach deletes it)
   await pool.query(
     `INSERT INTO sos_incidents (id, personnel_id, incident_type, severity, status, reported_at)
      VALUES ($1, $2, 'medical', 'high', 'reported', now())
@@ -48,14 +50,6 @@ afterAll(async () => {
 
 describe('GET /api/sos', () => {
   test('returns SOS incidents list', async () => {
-    // Re-seed since afterEach deleted it
-    await pool.query(
-      `INSERT INTO sos_incidents (id, personnel_id, incident_type, severity, status, reported_at)
-       VALUES ($1, $2, 'medical', 'high', 'reported', now())
-       ON CONFLICT (id) DO NOTHING`,
-      [TEST_SOS_ID, TEST_PERSONNEL_ID]
-    );
-
     const res = await request(app).get('/api/sos');
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
@@ -63,13 +57,6 @@ describe('GET /api/sos', () => {
   });
 
   test('filters by status', async () => {
-    await pool.query(
-      `INSERT INTO sos_incidents (id, personnel_id, incident_type, severity, status, reported_at)
-       VALUES ($1, $2, 'medical', 'high', 'reported', now())
-       ON CONFLICT (id) DO NOTHING`,
-      [TEST_SOS_ID, TEST_PERSONNEL_ID]
-    );
-
     const res = await request(app).get('/api/sos?status=reported');
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
@@ -79,13 +66,6 @@ describe('GET /api/sos', () => {
 
 describe('PATCH /api/sos/:id', () => {
   test('updates SOS status and creates outbox event', async () => {
-    await pool.query(
-      `INSERT INTO sos_incidents (id, personnel_id, incident_type, severity, status, reported_at)
-       VALUES ($1, $2, 'medical', 'high', 'reported', now())
-       ON CONFLICT (id) DO NOTHING`,
-      [TEST_SOS_ID, TEST_PERSONNEL_ID]
-    );
-
     const res = await request(app)
       .patch(`/api/sos/${TEST_SOS_ID}`)
       .send({ status: 'acknowledged', acknowledged_at: new Date().toISOString() });

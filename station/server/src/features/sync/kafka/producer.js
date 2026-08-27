@@ -3,6 +3,8 @@ const pool = require('../../../shared/config/db');
 
 let producer = null;
 let kafka = null;
+let immediateRunning = false;
+let normalRunning = false;
 
 const BATCH_SIZE = 50;
 
@@ -22,6 +24,16 @@ async function getProducer() {
   producer = client.producer({ allowAutoTopicCreation: true });
   await producer.connect();
   return producer;
+}
+
+async function ensureProducer() {
+  try {
+    return await getProducer();
+  } catch (err) {
+    producer = null;
+    kafka = null;
+    return await getProducer();
+  }
 }
 
 /**
@@ -47,7 +59,7 @@ async function fetchPendingEvents(priority) {
 async function produceBatch(events) {
   if (events.length === 0) return;
 
-  const prod = await getProducer();
+  const prod = await ensureProducer();
 
   const topicMessages = events.map((evt) => ({
     key: evt.entity_id,
@@ -77,17 +89,17 @@ async function produceBatch(events) {
 
   const result = await prod.sendBatch({ topicMessages: batches });
 
-  // kafkajs sendBatch returns one result per topic, not per message.
-  // We use baseOffset + message index as the approximate offset for each
-  // message in the batch. This is a known simplification — if a partial
-  // failure occurs, the entire batch would need to be retried. The tradeoff
-  // is efficiency (one network round-trip) vs granularity (per-message ack).
+  // kafkajs sendBatch returns one result per topic.
+  // Track per-topic offset using a running counter per topic.
+  const topicOffsetMap = {};
+  for (const r of result) {
+    topicOffsetMap[r.topicName] = parseInt(r.baseOffset, 10);
+  }
+
   const now = new Date();
-  for (let i = 0; i < events.length; i++) {
-    const evt = events[i];
+  for (const evt of events) {
     const topicName = evt.kafka_topic || process.env.KAFKA_TOPIC || 'maitri.station.events';
-    const topicResult = result.find(r => r.topicName === topicName);
-    const offset = topicResult ? parseInt(topicResult.baseOffset, 10) + i : null;
+    const offset = topicOffsetMap[topicName] != null ? topicOffsetMap[topicName]++ : null;
 
     await pool.query(
       `UPDATE outbound_sync_events
@@ -122,17 +134,7 @@ async function pollNormal() {
 
 /**
  * Start both polling loops. Called once from server.js at startup.
- * - Immediate loop: polls every OUTBOX_IMMEDIATE_POLL_SECONDS (default 5s)
- *   for SOS / priority='immediate' events. These must be flushed ASAP,
- *   not batched on a 10-minute cadence.
- * - Normal loop: polls every OUTBOX_FLUSH_INTERVAL_MINUTES (default 10 min)
- *   for all other events. This matches the architecture's stated sync
- *   interval and keeps batch sizes reasonable.
- *
- * The two-loop design avoids needing a single combined query with
- * ORDER BY priority DESC — the immediate loop naturally fires far more
- * often, so immediate events are always picked up within seconds without
- * polluting the normal loop's 10-minute cadence.
+ * Uses a running flag to prevent overlapping executions.
  */
 function startProducerLoops() {
   const immediateSeconds = parseInt(process.env.OUTBOX_IMMEDIATE_POLL_SECONDS, 10) || 5;
@@ -142,19 +144,27 @@ function startProducerLoops() {
 
   // Immediate loop
   setInterval(async () => {
+    if (immediateRunning) return;
+    immediateRunning = true;
     try {
       await pollImmediate();
     } catch (err) {
       console.error('[kafka-producer] immediate poll error:', err.message);
+    } finally {
+      immediateRunning = false;
     }
   }, immediateSeconds * 1000);
 
   // Normal loop
   setInterval(async () => {
+    if (normalRunning) return;
+    normalRunning = true;
     try {
       await pollNormal();
     } catch (err) {
       console.error('[kafka-producer] normal poll error:', err.message);
+    } finally {
+      normalRunning = false;
     }
   }, normalMinutes * 60 * 1000);
 }

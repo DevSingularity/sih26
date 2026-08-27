@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const pool = require('../../shared/config/db');
 const writeWithOutbox = require('../sync/outbox/writeWithOutbox');
 const thresholdsConfig = require('./thresholds.config');
@@ -40,30 +41,36 @@ async function checkThresholds(clientPool) {
   }
 
   // 2. Check resource usage logs for fuel/power levels
-  // (For MVP, we check if any resource has logged usage that brings it
-  // below threshold. A more sophisticated approach would track current
-  // levels as a materialized view.)
   const resourceResult = await conn.query(
     `SELECT id, resource_type, name, capacity, unit, status
      FROM resources
      WHERE status != 'offline'`
   );
 
+  // Fetch latest usage for ALL online resources in a single query
+  const resourceIds = resourceResult.rows.map(r => r.id);
+  let latestUsageMap = {};
+
+  if (resourceIds.length > 0) {
+    const latestUsageResult = await conn.query(
+      `SELECT DISTINCT ON (resource_id) resource_id, quantity
+       FROM resource_usage_logs
+       WHERE resource_id = ANY($1)
+       ORDER BY resource_id, occurred_at DESC`,
+      [resourceIds]
+    );
+    for (const row of latestUsageResult.rows) {
+      latestUsageMap[row.resource_id] = Number(row.quantity);
+    }
+  }
+
   for (const resource of resourceResult.rows) {
-    const configKey = resource.resource_type;
-    const config = thresholdsConfig[configKey];
+    const config = thresholdsConfig[resource.resource_type];
     if (!config) continue;
 
-    // Get the most recent usage log to estimate current level
-    const latestUsage = await conn.query(
-      `SELECT quantity FROM resource_usage_logs
-       WHERE resource_id = $1
-       ORDER BY occurred_at DESC LIMIT 1`,
-      [resource.id]
-    );
-
-    if (latestUsage.rows.length > 0 && resource.capacity) {
-      const currentLevel = Number(resource.capacity) - Number(latestUsage.rows[0].quantity);
+    const latestQuantity = latestUsageMap[resource.id];
+    if (latestQuantity != null && resource.capacity) {
+      const currentLevel = Number(resource.capacity) - latestQuantity;
       if (currentLevel <= config.critical) {
         alertsToRaise.push({
           metric: `resource:${resource.resource_type}:${resource.name}`,
@@ -84,6 +91,7 @@ async function checkThresholds(clientPool) {
 
   // 3. For each breach, check if an unacknowledged alert already exists
   // If not, insert one via writeWithOutbox
+  let inserted = 0;
   const client = await conn.connect();
   try {
     await client.query('BEGIN');
@@ -97,12 +105,11 @@ async function checkThresholds(clientPool) {
       );
 
       if (existing.rows.length > 0) {
-        // Alert already active — skip (no spam)
         continue;
       }
 
       // Insert new alert via the outbox
-      const alertId = require('crypto').randomUUID();
+      const alertId = crypto.randomUUID();
       await writeWithOutbox(client, {
         table: 'local_threshold_alerts',
         id: alertId,
@@ -116,6 +123,7 @@ async function checkThresholds(clientPool) {
         },
         priority: alert.severity === 'critical' ? 'immediate' : 'normal',
       });
+      inserted++;
     }
 
     await client.query('COMMIT');
@@ -126,7 +134,7 @@ async function checkThresholds(clientPool) {
     client.release();
   }
 
-  return { checked: alertsToRaise.length, alerts: alertsToRaise };
+  return { checked: alertsToRaise.length, inserted, alerts: alertsToRaise };
 }
 
 module.exports = checkThresholds;

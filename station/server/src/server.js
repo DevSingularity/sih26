@@ -3,6 +3,7 @@
 require('dotenv').config();
 const cron = require('node-cron');
 const app = require('./app');
+const pool = require('./shared/config/db');
 const { startProducerLoops, stopProducer } = require('./features/sync/kafka/producer');
 const syncDown = require('./features/sync/service/syncDown');
 
@@ -16,7 +17,7 @@ startProducerLoops();
 
 // Schedule admin sync-down pull from central server
 const syncDownMinutes = parseInt(process.env.SYNC_DOWN_INTERVAL_MINUTES, 10) || 10;
-cron.schedule(`*/${syncDownMinutes} * * * *`, async () => {
+const syncDownCron = cron.schedule(`*/${syncDownMinutes} * * * *`, async () => {
   console.log(`[sync-down] scheduled pull starting (every ${syncDownMinutes}min)`);
   try {
     const result = await syncDown();
@@ -29,12 +30,12 @@ console.log(`[sync-down] scheduled every ${syncDownMinutes} minutes`);
 
 // Schedule threshold check every 5 minutes (safety net for inventory/resource breaches)
 const checkThresholds = require('./features/alerts/thresholdCheck');
-cron.schedule('*/5 * * * *', async () => {
+const thresholdCron = cron.schedule('*/5 * * * *', async () => {
   console.log('[thresholds] scheduled check starting');
   try {
     const result = await checkThresholds();
-    if (result.checked > 0) {
-      console.log(`[thresholds] raised ${result.checked} alerts`);
+    if (result.inserted > 0) {
+      console.log(`[thresholds] raised ${result.inserted} alerts`);
     }
   } catch (err) {
     console.error('[thresholds] scheduled check error:', err.message);
@@ -43,16 +44,15 @@ cron.schedule('*/5 * * * *', async () => {
 console.log('[thresholds] scheduled every 5 minutes');
 
 // Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('[station-server] SIGTERM received, shutting down...');
+async function shutdown() {
+  console.log('[station-server] shutting down...');
+  syncDownCron.stop();
+  thresholdCron.stop();
   server.close();
   await stopProducer();
+  await pool.end();
   process.exit(0);
-});
+}
 
-process.on('SIGINT', async () => {
-  console.log('[station-server] SIGINT received, shutting down...');
-  server.close();
-  await stopProducer();
-  process.exit(0);
-});
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);

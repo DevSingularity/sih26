@@ -1,5 +1,6 @@
 const pool = require('../../../shared/config/db');
 const writeWithOutbox = require('../outbox/writeWithOutbox');
+const { SYNCABLE_TABLES } = require('../outbox/writeWithOutbox');
 const { z } = require('zod');
 
 /**
@@ -72,12 +73,6 @@ const REQUIRED_FIELDS = {
     severity: z.enum(['warning', 'critical']),
   }),
 };
-
-const SYNCABLE_TABLES = new Set([
-  'cargo_shipments', 'cargo_items', 'inventory_stock', 'inventory_transactions',
-  'resource_usage_logs', 'field_updates', 'location_tracks', 'sos_incidents',
-  'local_threshold_alerts',
-]);
 
 const VALID_OPERATIONS = new Set(['insert', 'update']);
 
