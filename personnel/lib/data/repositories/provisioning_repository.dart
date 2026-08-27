@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../config/app_config.dart';
 import '../local/database.dart';
 
 /// Data collected during setup, either scanned from a station-issued QR
@@ -54,22 +56,74 @@ class ProvisioningInput {
 /// beyond whatever the caller used to obtain the [ProvisioningInput]
 /// (e.g. a QR scan or a value manually copied from the station office).
 class ProvisioningRepository {
-  ProvisioningRepository(this._db);
+  ProvisioningRepository(this._db, {Dio? dio})
+      : _dio = dio ?? Dio(BaseOptions(
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
+        ));
 
   final AppDatabase _db;
+  final Dio _dio;
   static const _uuid = Uuid();
 
   Future<bool> isProvisioned() async {
     return (await _db.getSelfProfile()) != null;
   }
 
-  /// Generates this device's UUID, hashes the provisioning token, and
-  /// commits the single `self_profile` row. Idempotent: calling this again
-  /// on an already-provisioned device overwrites the row (used by a
-  /// future "re-provision this device" recovery flow, not by normal boot).
+  /// Generates this device's UUID, attempts server registration, and
+  /// commits the single `self_profile` row.
+  ///
+  /// If the server is reachable, stores the returned JWT as `auth_token_hash`
+  /// (so the sync engine sends it as Bearer token and the server can verify it).
+  /// If offline, falls back to storing a SHA-256 hash of the provisioning token
+  /// (won't work with server auth, but the app can still function locally).
   Future<SelfProfileRow> provision(ProvisioningInput input) async {
     final deviceId = _uuid.v4();
-    final tokenHash = sha256.convert(utf8.encode(input.provisioningToken)).toString();
+    String authToken;
+
+    // Try to register with the server and get a JWT
+    try {
+      final response = await _dio.post<Map<String, Object?>>(
+        '${AppConfig.stationBaseUrl}/api/auth/provision',
+        data: {
+          'personnel_id': input.personnelId,
+          'employee_code': input.employeeCode,
+          'full_name': input.fullName,
+          'role': input.role,
+          'designation': input.designation,
+          'station_id': input.stationId,
+        },
+      );
+
+      final serverDeviceId = response.data?['device_id'] as String?;
+      final jwt = response.data?['jwt'] as String?;
+
+      if (jwt != null) {
+        // Server returned a JWT — use it for auth
+        authToken = jwt;
+        // Also use the server-assigned device_id if available
+        if (serverDeviceId != null) {
+          // Re-insert with server's device_id (overwrites the locally generated one)
+          final row = SelfProfileCompanion.insert(
+            id: input.personnelId,
+            employeeCode: input.employeeCode,
+            fullName: input.fullName,
+            role: input.role,
+            designation: Value(input.designation),
+            stationId: input.stationId,
+            authTokenHash: Value(authToken),
+            deviceId: serverDeviceId,
+          );
+          await _db.into(_db.selfProfile).insertOnConflictUpdate(row);
+          return (await _db.getSelfProfile())!;
+        }
+      }
+    } catch (_) {
+      // Server unreachable or error — fall back to local-only provisioning
+    }
+
+    // Fallback: store SHA-256 hash (won't authenticate with server, but app works locally)
+    authToken = sha256.convert(utf8.encode(input.provisioningToken)).toString();
 
     final row = SelfProfileCompanion.insert(
       id: input.personnelId,
@@ -78,7 +132,7 @@ class ProvisioningRepository {
       role: input.role,
       designation: Value(input.designation),
       stationId: input.stationId,
-      authTokenHash: Value(tokenHash),
+      authTokenHash: Value(authToken),
       deviceId: deviceId,
     );
 
