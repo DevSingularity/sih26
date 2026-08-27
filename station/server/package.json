@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "PolarOps Maitri station server — phone sync ingestion, transactional outbox, Kafka producer",
   "main": "src/server.js",
-  "type": "module",
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
