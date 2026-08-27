@@ -14,3 +14,7 @@ allows.
 
 Full build spec: [`/docs/03_personnel_app_build_prompt.md`](../docs/03_personnel_app_build_prompt.md).
 Data model reference: [`/schemas/`](../schemas/).
+
+Setting up a clone or a new machine? See [`SETUP.md`](./SETUP.md) —
+covers generating the missing platform folders, required permissions,
+and Drift codegen.
