@@ -1,0 +1,22 @@
+# This file configures the static analysis results for this project.
+#
+# Rules are defined in the flutter_lints package, and you can tweak
+# rules in this file, for example to ignore specific lint warnings, or
+# activate additional rules. A list of all available lints and their
+# documentation is published at https://dart.dev/lints.
+include: package:flutter_lints/flutter.yaml
+
+# No rule overrides yet — using the flutter_lints defaults as-is.
+# Add project-specific rule tweaks here if the analyzer starts flagging
+# something intentional (e.g. in the generated Drift table classes).
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"      # drift/build_runner generated code
+    - "build/**"
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
