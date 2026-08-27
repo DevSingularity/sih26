@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../../data/local/database.dart';
 import '../../field_updates/screens/field_updates_screen.dart';
+import '../../location_tracking/screens/location_tracking_screen.dart';
 
-/// App shell shown once a device is provisioned. Only Field Updates is
-/// wired up as of milestone 2 — the rest are placeholder tiles per
-/// /docs/03_personnel_app_build_prompt.md, section 3, and get wired in
-/// as their own milestones land.
+/// App shell shown once a device is provisioned. Field Updates (milestone
+/// 2) and Location Updates (milestone 3) are wired up; the rest are
+/// placeholder tiles per /docs/03_personnel_app_build_prompt.md, section
+/// 3, and get wired in as their own milestones land.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, required this.database});
 
@@ -48,10 +49,13 @@ class HomeScreen extends StatelessWidget {
                 title: 'Resource Usage',
                 subtitle: 'Coming in a later milestone',
               ),
-              const _FeatureTile(
+              _FeatureTile(
                 icon: Icons.location_on_outlined,
                 title: 'Location Updates',
-                subtitle: 'Coming in a later milestone',
+                subtitle: 'Background GPS batching',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => LocationTrackingScreen(database: database)),
+                ),
               ),
               const _FeatureTile(
                 icon: Icons.emergency_outlined,
