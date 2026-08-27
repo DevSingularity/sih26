@@ -257,7 +257,7 @@ CREATE TABLE location_tracks (
     track_ended_at          TIMESTAMPTZ NOT NULL,           -- recorded_at of last point in the batch
     origin_device_id        UUID,
     server_received_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-) PARTITION BY RANGE (track_started_at);   -- still high-volume; partition monthly in practice
+);
 
 CREATE TABLE sos_incidents (
     id                  UUID PRIMARY KEY,
