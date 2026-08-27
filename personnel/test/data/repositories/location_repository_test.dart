@@ -90,6 +90,29 @@ void main() {
     expect(allTracks, hasLength(2));
   });
 
+  test('concurrent rollupBuffer calls coalesce into one track, not duplicates', () async {
+    await repository.recordPing(latitude: -70.760, longitude: 11.730);
+    await repository.recordPing(latitude: -70.761, longitude: 11.731);
+
+    // No `await` between these two — simulates the timer tick and a
+    // point-count trigger landing at the same moment. Both futures should
+    // resolve to the SAME track, and only one row/outbox entry should
+    // exist afterward.
+    final future1 = repository.rollupBuffer();
+    final future2 = repository.rollupBuffer();
+    final results = await Future.wait([future1, future2]);
+
+    expect(results[0], isNotNull);
+    expect(results[0]!.id, results[1]!.id);
+
+    final tracks = await database.select(database.locationTracksLocal).get();
+    expect(tracks, hasLength(1));
+    expect(tracks.single.pointCount, 2);
+
+    final outboxRows = await database.select(database.outboxQueue).get();
+    expect(outboxRows, hasLength(1));
+  });
+
   test('watchBufferedPingCount reflects inserts and clears after rollup', () async {
     final counts = <int>[];
     final sub = repository.watchBufferedPingCount().listen(counts.add);

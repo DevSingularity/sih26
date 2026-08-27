@@ -29,6 +29,17 @@ class LocationRepository {
   final SyncRepository _syncRepository;
   static const _uuid = Uuid();
 
+  /// Guards [rollupBuffer] against concurrent execution. The timer in
+  /// `LocationRollupScheduler` and the point-count check in
+  /// `maybeRollupOnPing` can both call `rollupBuffer()` around the same
+  /// moment; without this, two overlapping calls could each snapshot an
+  /// overlapping set of buffer rows and each write their own
+  /// `location_tracks_local` + outbox row — duplicate points shipped to
+  /// the station server. Any caller that arrives while a rollup is
+  /// already running gets back the SAME in-flight Future instead of
+  /// starting a second one.
+  Future<LocationTrackLocalRow?>? _inFlightRollup;
+
   Future<void> recordPing({
     required double latitude,
     required double longitude,
@@ -75,7 +86,19 @@ class LocationRepository {
   /// being silently dropped or duplicated.
   ///
   /// Returns null if the buffer was empty (nothing to roll up).
-  Future<LocationTrackLocalRow?> rollupBuffer() async {
+  Future<LocationTrackLocalRow?> rollupBuffer() {
+    final inFlight = _inFlightRollup;
+    if (inFlight != null) return inFlight;
+
+    final future = _rollupBufferLocked();
+    _inFlightRollup = future;
+    // Whatever the outcome, clear the guard once this attempt finishes so
+    // the next call (timer tick, next threshold trip, etc.) can proceed.
+    future.whenComplete(() => _inFlightRollup = null);
+    return future;
+  }
+
+  Future<LocationTrackLocalRow?> _rollupBufferLocked() async {
     final bufferRows = await (_db.select(_db.locationPingBuffer)
           ..orderBy([(t) => OrderingTerm.asc(t.recordedAt)]))
         .get();

@@ -41,7 +41,12 @@ class _LocationTrackingScreenState extends State<LocationTrackingScreen> {
     super.initState();
     _repository = LocationRepository(widget.database, SyncRepository(widget.database));
     _scheduler = LocationRollupScheduler(widget.database);
-    _scheduler.start();
+    _scheduler.start().catchError((Object e) {
+      if (mounted) {
+        setState(() => _error =
+            'Background rollup scheduling failed to start: $e. In-app tracking and manual roll-up still work.');
+      }
+    });
   }
 
   @override
