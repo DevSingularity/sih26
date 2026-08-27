@@ -10,6 +10,8 @@ import 'package:polarops_personnel_app/data/repositories/sos_repository.dart';
 import 'package:polarops_personnel_app/data/repositories/sync_repository.dart';
 import 'package:polarops_personnel_app/services/sync_engine.dart';
 
+import 'package:polarops_personnel_app/services/connectivity_service.dart';
+
 // A simple fake HttpClientAdapter to intercept Dio requests for testing
 class FakeHttpClientAdapter implements HttpClientAdapter {
   FakeHttpClientAdapter(this.handler);
@@ -27,6 +29,20 @@ class FakeHttpClientAdapter implements HttpClientAdapter {
 
   @override
   void close({bool force = false}) {}
+}
+
+class FakeConnectivityService extends ConnectivityService {
+  FakeConnectivityService(super.db);
+
+  @override
+  Future<ConnectivityLogRow> check() async {
+    return ConnectivityLogRow(
+      id: 1,
+      isOnline: true,
+      linkType: 'wifi',
+      checkedAt: DateTime.now().toUtc().toIso8601String(),
+    );
+  }
 }
 
 void main() {
@@ -113,7 +129,14 @@ void main() {
       expect(body['records'][0]['entity_table'], 'sos_incidents_local');
       expect(body['records'][0]['operation'], 'insert');
 
-      final responsePayload = {'status': 'success'};
+      final responsePayload = {
+        'results': [
+          {
+            'entity_id': body['records'][0]['entity_id'],
+            'status': 'accepted',
+          }
+        ]
+      };
       return ResponseBody.fromString(
         jsonEncode(responsePayload),
         200,
@@ -123,10 +146,14 @@ void main() {
       );
     });
 
-    final syncEngine = SyncEngine(database, dio: dio);
+    final syncEngine = SyncEngine(
+      database,
+      dio: dio,
+      connectivity: FakeConnectivityService(database),
+    );
 
     // 4. Run SyncEngine
-    await syncEngine.triggerSync();
+    await syncEngine.flush();
 
     expect(apiCalled, isTrue);
 

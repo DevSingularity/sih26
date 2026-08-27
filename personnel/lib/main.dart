@@ -8,16 +8,19 @@ import 'package:flutter/material.dart';
 import 'data/local/database.dart';
 import 'features/auth/screens/auth_screen.dart';
 import 'features/home/screens/home_screen.dart';
+import 'services/sync_engine.dart';
 
 void main() {
   final database = AppDatabase();
-  runApp(PolarOpsApp(database: database));
+  final syncEngine = SyncEngine(database)..start();
+  runApp(PolarOpsApp(database: database, syncEngine: syncEngine));
 }
 
 class PolarOpsApp extends StatelessWidget {
-  const PolarOpsApp({super.key, required this.database});
+  const PolarOpsApp({super.key, required this.database, required this.syncEngine});
 
   final AppDatabase database;
+  final SyncEngine syncEngine;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +33,9 @@ class PolarOpsApp extends StatelessWidget {
             return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
           final provisioned = snapshot.data != null;
-          return provisioned ? HomeScreen(database: database) : AuthScreen(database: database);
+          return provisioned
+              ? HomeScreen(database: database, syncEngine: syncEngine)
+              : AuthScreen(database: database, syncEngine: syncEngine);
         },
       ),
     );

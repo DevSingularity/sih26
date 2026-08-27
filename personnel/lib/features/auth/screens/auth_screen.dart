@@ -3,6 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../data/local/database.dart';
 import '../../../data/repositories/provisioning_repository.dart';
+import '../../../services/sync_engine.dart';
 import '../../home/screens/home_screen.dart';
 
 /// One-time setup screen. Provisions this device — either by scanning a
@@ -11,9 +12,14 @@ import '../../home/screens/home_screen.dart';
 /// on this device once provisioning succeeds: see main.dart, which routes
 /// straight past this screen on every later launch.
 class AuthScreen extends StatefulWidget {
-  const AuthScreen({super.key, required this.database});
+  const AuthScreen({
+    super.key,
+    required this.database,
+    required this.syncEngine,
+  });
 
   final AppDatabase database;
+  final SyncEngine syncEngine;
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -56,7 +62,12 @@ class _AuthScreenState extends State<AuthScreen> {
       await _repo.provision(input);
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => HomeScreen(database: widget.database)),
+        MaterialPageRoute(
+          builder: (_) => HomeScreen(
+            database: widget.database,
+            syncEngine: widget.syncEngine,
+          ),
+        ),
       );
     } catch (e) {
       setState(() => _error = 'Could not save device setup: $e');

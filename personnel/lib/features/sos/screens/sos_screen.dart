@@ -9,9 +9,14 @@ import '../../../data/repositories/sync_repository.dart';
 import '../../../services/sync_engine.dart';
 
 class SosScreen extends StatefulWidget {
-  const SosScreen({super.key, required this.database});
+  const SosScreen({
+    super.key,
+    required this.database,
+    required this.syncEngine,
+  });
 
   final AppDatabase database;
+  final SyncEngine syncEngine;
 
   @override
   State<SosScreen> createState() => _SosScreenState();
@@ -34,7 +39,7 @@ class _SosScreenState extends State<SosScreen> with SingleTickerProviderStateMix
   void initState() {
     super.initState();
     _repository = SosRepository(widget.database, SyncRepository(widget.database));
-    _syncEngine = SyncEngine(widget.database);
+    _syncEngine = widget.syncEngine;
 
     _animationController = AnimationController(
       vsync: this,
@@ -127,7 +132,7 @@ class _SosScreenState extends State<SosScreen> with SingleTickerProviderStateMix
     }
 
     // Trigger immediate out-of-cycle sync
-    await _syncEngine.triggerSync();
+    _syncEngine.triggerImmediateFlush();
 
     if (mounted) {
       setState(() {

@@ -54,12 +54,12 @@ void locationRollupCallbackDispatcher() {
       final repository = LocationRepository(database, SyncRepository(database));
       await repository.rollupBuffer();
       await database.close();
-      return Future.value(true);
+      return true;
     } catch (_) {
       // Leave everything as-is and let WorkManager retry on its own
       // backoff policy rather than losing pings — a failed rollup attempt
       // just means the buffer keeps growing until the next attempt.
-      return Future.value(false);
+      return false;
     }
   });
 }
@@ -68,10 +68,9 @@ void locationRollupCallbackDispatcher() {
 /// One instance per app run; start it once (e.g. from main.dart) after the
 /// database is ready.
 class LocationRollupScheduler {
-  LocationRollupScheduler(this._database)
-      : _repository = LocationRepository(_database, SyncRepository(_database));
+  LocationRollupScheduler(AppDatabase database)
+      : _repository = LocationRepository(database, SyncRepository(database));
 
-  final AppDatabase _database;
   final LocationRepository _repository;
   Timer? _timer;
 

@@ -1,25 +1,73 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/local/database.dart';
+import '../../../services/sync_engine.dart';
 import '../../cargo_handling/screens/cargo_handling_screen.dart';
 import '../../field_updates/screens/field_updates_screen.dart';
 import '../../location_tracking/screens/location_tracking_screen.dart';
 import '../../resource_usage/screens/resource_usage_screen.dart';
 import '../../sos/screens/sos_screen.dart';
+import '../../sync_status/screens/sync_status_screen.dart';
 
-/// App shell shown once a device is provisioned. Field Updates (milestone
-/// 2) and Location Updates (milestone 3) are wired up; the rest are
-/// placeholder tiles per /docs/03_personnel_app_build_prompt.md, section
-/// 3, and get wired in as their own milestones land.
+/// App shell shown once a device is provisioned.
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key, required this.database});
+  const HomeScreen({
+    super.key,
+    required this.database,
+    required this.syncEngine,
+  });
 
   final AppDatabase database;
+  final SyncEngine syncEngine;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('PolarOps')),
+      appBar: AppBar(
+        title: const Text('PolarOps'),
+        actions: [
+          StreamBuilder<int>(
+            stream: syncEngine.repository.watchTotalPendingCount(),
+            builder: (context, snapshot) {
+              final pending = snapshot.data ?? 0;
+              return ValueListenableBuilder<SyncStatus>(
+                valueListenable: syncEngine.status,
+                builder: (context, status, _) {
+                  Color color = Colors.grey;
+                  IconData icon = Icons.cloud_queue;
+
+                  if (status.phase == SyncPhase.flushing) {
+                    color = Colors.green;
+                    icon = Icons.sync;
+                  } else if (status.phase == SyncPhase.backoff) {
+                    color = Colors.amber;
+                    icon = Icons.hourglass_empty;
+                  } else if (status.phase == SyncPhase.offline) {
+                    color = Colors.red.shade400;
+                    icon = Icons.cloud_off;
+                  } else if (pending > 0) {
+                    color = Colors.orange;
+                    icon = Icons.cloud_upload_outlined;
+                  }
+
+                  return TextButton.icon(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => SyncStatusScreen(syncEngine: syncEngine),
+                      ),
+                    ),
+                    icon: Icon(icon, color: color),
+                    label: Text(
+                      '$pending',
+                      style: TextStyle(color: color, fontWeight: FontWeight.bold),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
       body: FutureBuilder<SelfProfileRow?>(
         future: database.getSelfProfile(),
         builder: (context, snapshot) {
@@ -71,7 +119,9 @@ class HomeScreen extends StatelessWidget {
                 title: 'SOS',
                 subtitle: 'Trigger emergency distress alerts',
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => SosScreen(database: database)),
+                  MaterialPageRoute(
+                    builder: (_) => SosScreen(database: database, syncEngine: syncEngine),
+                  ),
                 ),
               ),
             ],

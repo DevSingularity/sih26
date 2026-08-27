@@ -5,12 +5,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:polarops_personnel_app/data/local/database.dart';
 import 'package:polarops_personnel_app/main.dart';
 
+import 'package:polarops_personnel_app/services/sync_engine.dart';
+
 void main() {
   testWidgets('App boot and routing test', (WidgetTester tester) async {
     final db = AppDatabase.withExecutor(NativeDatabase.memory());
+    final syncEngine = SyncEngine(db);
     
     // Build our app and trigger a frame.
-    await tester.pumpWidget(PolarOpsApp(database: db));
+    await tester.pumpWidget(PolarOpsApp(database: db, syncEngine: syncEngine));
 
     // Initially it shows a progress indicator because it is checking self profile
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -20,6 +23,7 @@ void main() {
     // Since profile is empty, it should navigate to AuthScreen (setup/provisioning screen)
     expect(find.text('Set up this device'), findsWidgets);
 
+    syncEngine.dispose();
     await db.close();
   });
 }
