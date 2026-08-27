@@ -225,6 +225,7 @@ async function applySyncBatch({ device_id, batch_id, records }) {
     );
 
     await client.query('COMMIT');
+
     return response;
   } catch (err) {
     await client.query('ROLLBACK');

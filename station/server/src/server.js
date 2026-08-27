@@ -27,6 +27,21 @@ cron.schedule(`*/${syncDownMinutes} * * * *`, async () => {
 });
 console.log(`[sync-down] scheduled every ${syncDownMinutes} minutes`);
 
+// Schedule threshold check every 5 minutes (safety net for inventory/resource breaches)
+const checkThresholds = require('./features/alerts/thresholdCheck');
+cron.schedule('*/5 * * * *', async () => {
+  console.log('[thresholds] scheduled check starting');
+  try {
+    const result = await checkThresholds();
+    if (result.checked > 0) {
+      console.log(`[thresholds] raised ${result.checked} alerts`);
+    }
+  } catch (err) {
+    console.error('[thresholds] scheduled check error:', err.message);
+  }
+});
+console.log('[thresholds] scheduled every 5 minutes');
+
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('[station-server] SIGTERM received, shutting down...');
