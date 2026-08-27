@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/local/database.dart';
+import '../../field_updates/screens/field_updates_screen.dart';
 
-/// Placeholder app shell shown once a device is provisioned. Feature
-/// screens (Field Updates, Cargo Handling, Resource Usage, Location,
-/// SOS, Sync Status) land here in later milestones — see
-/// /docs/03_personnel_app_build_prompt.md, section 3.
+/// App shell shown once a device is provisioned. Only Field Updates is
+/// wired up as of milestone 2 — the rest are placeholder tiles per
+/// /docs/03_personnel_app_build_prompt.md, section 3, and get wired in
+/// as their own milestones land.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, required this.database});
 
@@ -22,19 +23,74 @@ class HomeScreen extends StatelessWidget {
           if (profile == null) {
             return const Center(child: CircularProgressIndicator());
           }
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Welcome, ${profile.fullName}', style: Theme.of(context).textTheme.headlineSmall),
-                const SizedBox(height: 8),
-                Text('${profile.role} · ${profile.stationId}'),
-                const SizedBox(height: 24),
-                const Text('Feature screens land here in later milestones.'),
-              ],
-            ),
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Text('Welcome, ${profile.fullName}', style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 4),
+              Text('${profile.role} · ${profile.stationId}', style: Theme.of(context).textTheme.bodyMedium),
+              const SizedBox(height: 24),
+              _FeatureTile(
+                icon: Icons.assignment_outlined,
+                title: 'Field Updates',
+                subtitle: 'Daily activity, site conditions, notes',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => FieldUpdatesScreen(database: database)),
+                ),
+              ),
+              const _FeatureTile(
+                icon: Icons.inventory_2_outlined,
+                title: 'Cargo Handling',
+                subtitle: 'Coming in a later milestone',
+              ),
+              const _FeatureTile(
+                icon: Icons.local_gas_station_outlined,
+                title: 'Resource Usage',
+                subtitle: 'Coming in a later milestone',
+              ),
+              const _FeatureTile(
+                icon: Icons.location_on_outlined,
+                title: 'Location Updates',
+                subtitle: 'Coming in a later milestone',
+              ),
+              const _FeatureTile(
+                icon: Icons.emergency_outlined,
+                title: 'SOS',
+                subtitle: 'Coming in a later milestone',
+              ),
+            ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _FeatureTile extends StatelessWidget {
+  const _FeatureTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onTap != null;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: Icon(icon, color: enabled ? null : Theme.of(context).disabledColor),
+        title: Text(title, style: enabled ? null : TextStyle(color: Theme.of(context).disabledColor)),
+        subtitle: Text(subtitle),
+        trailing: enabled ? const Icon(Icons.chevron_right) : null,
+        onTap: onTap,
+        enabled: enabled,
       ),
     );
   }
