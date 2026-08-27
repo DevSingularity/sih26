@@ -4,6 +4,7 @@ import '../../../data/local/database.dart';
 import '../../cargo_handling/screens/cargo_handling_screen.dart';
 import '../../field_updates/screens/field_updates_screen.dart';
 import '../../location_tracking/screens/location_tracking_screen.dart';
+import '../../resource_usage/screens/resource_usage_screen.dart';
 
 /// App shell shown once a device is provisioned. Field Updates (milestone
 /// 2) and Location Updates (milestone 3) are wired up; the rest are
@@ -48,10 +49,13 @@ class HomeScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => CargoHandlingScreen(database: database)),
                 ),
               ),
-              const _FeatureTile(
+              _FeatureTile(
                 icon: Icons.local_gas_station_outlined,
                 title: 'Resource Usage',
-                subtitle: 'Coming in a later milestone',
+                subtitle: 'Log fuel, power, and equipment',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => ResourceUsageScreen(database: database)),
+                ),
               ),
               _FeatureTile(
                 icon: Icons.location_on_outlined,
