@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: polarops-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: polarops_central
+    ports:
+      - "5432:5432"
+    volumes:
+      - polarops_pgdata:/var/lib/postgresql
+
+volumes:
+  polarops_pgdata:
