@@ -3,12 +3,11 @@
   "version": "0.1.0",
   "description": "PolarOps central (India HQ / NCPOR) server — REST API, Kafka consumer, admin auth",
   "main": "src/server.js",
-  "type": "module",
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "migrate": "psql $DATABASE_URL -f db/migrations/01_central_server_schema.sql",
-    "test": "jest"
+    "test": "node --test tests/*.test.js"
   },
   "dependencies": {
     "express": "^4.19.2",
