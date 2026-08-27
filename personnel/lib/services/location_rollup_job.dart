@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
 
 import '../data/local/database.dart';
@@ -73,15 +75,37 @@ class LocationRollupScheduler {
   final LocationRepository _repository;
   Timer? _timer;
 
-  /// Starts the in-app periodic timer and registers the WorkManager
-  /// backstop task. Safe to call once at app start; idempotent registration
-  /// on the WorkManager side (`ExistingPeriodicWorkPolicy` defaults to
-  /// keeping the existing task rather than duplicating it — worth
-  /// confirming against the installed workmanager version's docs if you
-  /// see duplicate runs).
+  /// Starts the in-app periodic timer and, where supported, registers the
+  /// WorkManager backstop task. Safe to call once at app start; idempotent
+  /// registration on the WorkManager side (`ExistingPeriodicWorkPolicy`
+  /// defaults to keeping the existing task rather than duplicating it —
+  /// worth confirming against the installed workmanager version's docs if
+  /// you see duplicate runs).
+  ///
+  /// PLATFORM NOTE: the `workmanager` package only ships native
+  /// implementations for Android and iOS — there is no Windows/Linux/macOS
+  /// desktop or web backend, so calling `Workmanager().initialize(...)` on
+  /// those platforms throws `UnimplementedError` (or, on web, is simply
+  /// unavailable). The in-app `Timer.periodic` above is the trigger that
+  /// actually does the ~2-5 min rollup on every platform, including
+  /// desktop; WorkManager here is *only* the "still roll up after the app
+  /// process is killed" backstop described above, which is a mobile-only
+  /// concept (desktop builds during dev don't need it). So: skip
+  /// registration entirely on unsupported platforms rather than letting it
+  /// throw and take the timer down with it.
   Future<void> start() async {
     _timer?.cancel();
     _timer = Timer.periodic(kRollupInterval, (_) => _repository.rollupBuffer());
+
+    if (!_workManagerSupported) {
+      debugPrint(
+        'LocationRollupScheduler: workmanager has no implementation on '
+        'this platform (desktop/web) — skipping the WorkManager backstop. '
+        'The in-app timer (every ${kRollupInterval.inMinutes} min) still '
+        'drives the rollup normally.',
+      );
+      return;
+    }
 
     await Workmanager().initialize(locationRollupCallbackDispatcher);
     await Workmanager().registerPeriodicTask(
@@ -90,6 +114,11 @@ class LocationRollupScheduler {
       frequency: kWorkManagerBackstopInterval,
     );
   }
+
+  /// `workmanager` only has native backends for Android and iOS. `kIsWeb`
+  /// is checked first since `Platform` throws on web.
+  bool get _workManagerSupported =>
+      !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
   void stop() {
     _timer?.cancel();
