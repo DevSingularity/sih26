@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/local/database.dart';
+import '../../cargo_handling/screens/cargo_handling_screen.dart';
 import '../../field_updates/screens/field_updates_screen.dart';
 import '../../location_tracking/screens/location_tracking_screen.dart';
 
@@ -39,10 +40,13 @@ class HomeScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => FieldUpdatesScreen(database: database)),
                 ),
               ),
-              const _FeatureTile(
+              _FeatureTile(
                 icon: Icons.inventory_2_outlined,
                 title: 'Cargo Handling',
-                subtitle: 'Coming in a later milestone',
+                subtitle: 'Scan, upload, verify & confirm',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => CargoHandlingScreen(database: database)),
+                ),
               ),
               const _FeatureTile(
                 icon: Icons.local_gas_station_outlined,
