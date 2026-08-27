@@ -5,6 +5,8 @@ let producer = null;
 let kafka = null;
 let immediateRunning = false;
 let normalRunning = false;
+let lastConnectFailedAt = 0;
+const CONNECT_BACKOFF_MS = 60000;
 
 const BATCH_SIZE = 50;
 
@@ -13,7 +15,8 @@ function createKafkaClient() {
   kafka = new Kafka({
     clientId: `maitri-station-${process.env.STATION_CODE || 'MAITRI'}`,
     brokers: (process.env.KAFKA_BROKERS || 'localhost:9092').split(','),
-    retry: { retries: 8, initialRetryTime: 100, maxRetryTime: 30000 },
+    retry: { retries: 3, initialRetryTime: 500, maxRetryTime: 5000 },
+    logLevel: 4,
   });
   return kafka;
 }
@@ -24,16 +27,6 @@ async function getProducer() {
   producer = client.producer({ allowAutoTopicCreation: true });
   await producer.connect();
   return producer;
-}
-
-async function ensureProducer() {
-  try {
-    return await getProducer();
-  } catch (err) {
-    producer = null;
-    kafka = null;
-    return await getProducer();
-  }
 }
 
 /**
@@ -59,7 +52,21 @@ async function fetchPendingEvents(priority) {
 async function produceBatch(events) {
   if (events.length === 0) return;
 
-  const prod = await ensureProducer();
+  // Skip if Kafka recently failed — back off for CONNECT_BACKOFF_MS
+  if (Date.now() - lastConnectFailedAt < CONNECT_BACKOFF_MS) {
+    return;
+  }
+
+  let prod;
+  try {
+    prod = await getProducer();
+  } catch (err) {
+    lastConnectFailedAt = Date.now();
+    producer = null;
+    kafka = null;
+    console.warn('[kafka-producer] connection failed, will retry later:', err.message);
+    return;
+  }
 
   const topicMessages = events.map((evt) => ({
     key: evt.entity_id,
