@@ -1,0 +1,18 @@
+# Flutter build artifacts
+personnel/.dart_tool/
+personnel/.flutter-plugins
+personnel/.flutter-plugins-dependencies
+personnel/pubspec.lock
+
+# Node
+node_modules/
+.next/
+.env
+.env.local
+
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db

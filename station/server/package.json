@@ -1,0 +1,27 @@
+{
+  "name": "polarops-station-server",
+  "version": "0.1.0",
+  "description": "PolarOps Maitri station server — phone sync ingestion, transactional outbox, Kafka producer",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "migrate": "psql $DATABASE_URL -f db/migrations/02_maitri_station_schema.sql",
+    "test": "jest --forceExit --testTimeout=15000"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "kafkajs": "^2.2.4",
+    "node-cron": "^3.0.3",
+    "pg": "^8.12.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.4",
+    "supertest": "^7.2.2"
+  }
+}

@@ -1,0 +1,39 @@
+name: polarops_personnel_app
+description: PolarOps field-personnel app (offline-first, Flutter + Drift)
+version: 0.1.0
+
+# Targets current-generation Flutter/Dart (Flutter 3.35+ / Dart 3.9+ toolchains).
+# See SETUP.md — "Version notes" — for how to confirm/bump the exact floors
+# below to whatever is newest on pub.dev when you set this up.
+environment:
+  sdk: '>=3.9.0 <4.0.0'
+  flutter: '>=3.35.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  drift: ^2.23.0
+  sqlite3_flutter_libs: ^0.6.0+eol
+  path_provider: ^2.1.5
+  path: ^1.9.1
+  dio: ^5.11.0
+  uuid: ^4.5.1
+  crypto: ^3.0.6
+  connectivity_plus: ^7.3.1
+  workmanager: ^0.10.9
+  geolocator: ^14.0.3
+  mobile_scanner: ^7.4.0
+  image_picker: ^1.1.2
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  drift_dev: ^2.23.0
+  build_runner: ^2.4.13
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
